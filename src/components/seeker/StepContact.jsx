@@ -29,6 +29,21 @@ export default function StepContact({ d, set }) {
         <input className="gs-input" value={d.zipCode}
           onChange={e => set("zipCode", e.target.value)} placeholder="10001" maxLength={10} />
       </div>
+      <div className="gs-field">
+        <label className="gs-label">Parent / Guardian Email *</label>
+        <input type="email" className="gs-input" value={d.parentEmail}
+          onChange={e => set("parentEmail", e.target.value)} placeholder="parent@email.com" />
+      </div>
+      <div className="gs-field">
+        <label className="gs-label">Create Password *</label>
+        <input type="password" className="gs-input" value={d.password}
+          onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" />
+      </div>
+      <div className="gs-field">
+        <label className="gs-label">Confirm Password *</label>
+        <input type="password" className="gs-input" value={d.confirmPassword}
+          onChange={e => set("confirmPassword", e.target.value)} placeholder="Re-enter password" />
+      </div>
     </div>
   );
 }

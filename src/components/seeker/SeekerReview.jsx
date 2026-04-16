@@ -43,6 +43,7 @@ export default function SeekerReview({ d, age }) {
           : "Either"
         } />
       )}
+      {d.parentEmail && <Rev label="Parent / Guardian Email" val={d.parentEmail} />}
     </div>
   );
 }

@@ -28,6 +28,16 @@ export default function StepBusinessInfo({ d, set }) {
         <input className="gs-input" value={d.companyZip}
           onChange={e => set("companyZip", e.target.value)} placeholder="10001" maxLength={10} />
       </div>
+      <div className="gs-field">
+        <label className="gs-label">Create Password *</label>
+        <input type="password" className="gs-input" value={d.password}
+          onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" />
+      </div>
+      <div className="gs-field">
+        <label className="gs-label">Confirm Password *</label>
+        <input type="password" className="gs-input" value={d.confirmPassword}
+          onChange={e => set("confirmPassword", e.target.value)} placeholder="Re-enter password" />
+      </div>
     </div>
   );
 }
