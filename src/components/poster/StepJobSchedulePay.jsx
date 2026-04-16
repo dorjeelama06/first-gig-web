@@ -52,10 +52,17 @@ export default function StepJobSchedulePay({ d, set, toggle }) {
           ))}
         </div>
       </div>
-      <div className="gs-field">
-        <label className="gs-label">Start Date</label>
-        <input type="date" className="gs-input" value={d.startDate}
-          onChange={e => set("startDate", e.target.value)} />
+      <div style={{ display: "flex", gap: 10 }}>
+        <div className="gs-field" style={{ flex: 1 }}>
+          <label className="gs-label">Start Date</label>
+          <input type="date" className="gs-input" value={d.startDate}
+            onChange={e => set("startDate", e.target.value)} />
+        </div>
+        <div className="gs-field" style={{ flex: 1 }}>
+          <label className="gs-label">End Date</label>
+          <input type="date" className="gs-input" value={d.endDate}
+            onChange={e => set("endDate", e.target.value)} />
+        </div>
       </div>
     </div>
   );

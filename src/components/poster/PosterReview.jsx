@@ -41,6 +41,7 @@ export default function PosterReview({ d }) {
           <RevTags label="Schedule" tags={schedLabels} />
         </div>
         {d.startDate && <Rev label="Start Date" val={d.startDate} />}
+        {d.endDate && <Rev label="End Date" val={d.endDate} />}
         <div style={{ gridColumn: "1 / -1" }}>
           <Rev label="Location" val={d.isRemote ? "🏠 Remote"
             : <>{d.jobAddress && `${d.jobAddress}, `}{d.jobCity && `${d.jobCity}, `}{d.jobState} {d.jobZip}</>} />

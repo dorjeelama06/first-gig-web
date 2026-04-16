@@ -10,6 +10,10 @@ export const CATEGORY_OPTIONS = [
   { id: "crafts", label: "Arts & Crafts", icon: "🎨" },
   { id: "music", label: "Music", icon: "🎵" },
   { id: "cars", label: "Cars", icon: "🚗" },
+  { id: "sports", label: "Sports", icon: "⚽" },
+  { id: "camps", label: "Camps & Kids", icon: "🏕️" },
+  { id: "refereeing", label: "Refereeing", icon: "🏁" },
+  { id: "lifeguarding", label: "Lifeguarding", icon: "🏊" },
 ];
 
 export const AVAILABILITY_OPTIONS = [

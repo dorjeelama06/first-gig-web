@@ -41,7 +41,7 @@ export default function App() {
     jobTitle: "", jobDesc: "", jobCategory: [], customCategory: "", positionsCount: "1",
     minAge: "16", skills: "", dressCode: "", requirements: "",
     payType: "hourly", payMin: "", payMax: "", hoursPerWeek: "",
-    schedule: [], startDate: "",
+    schedule: [], startDate: "", endDate: "",
     jobAddress: "", jobCity: "", jobState: "", jobZip: "", isRemote: false,
   });
 
