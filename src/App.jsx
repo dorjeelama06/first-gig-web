@@ -3,7 +3,7 @@ import { CSS_STYLES } from "./styles/styles";
 import { SEEKER_STEPS, POSTER_STEPS } from "./constants/steps";
 import { supabase } from "./lib/supabase";
 
-import AuthLanding from "./components/auth/AuthLanding";
+import HomePage from "./pages/HomePage";
 import LoginForm from "./components/auth/LoginForm";
 import Dashboard from "./components/auth/Dashboard";
 
@@ -27,7 +27,7 @@ import StepJobLocation from "./components/poster/StepJobLocation";
 import PosterReview from "./components/poster/PosterReview";
 
 export default function App() {
-  // 'loading' | 'landing' | 'login' | 'onboarding' | 'dashboard'
+  // 'loading' | 'home' | 'login' | 'onboarding' | 'dashboard'
   const [authView, setAuthView] = useState("loading");
   const [user, setUser] = useState(null);
   const [submitError, setSubmitError] = useState("");
@@ -36,8 +36,8 @@ export default function App() {
   /* ─── Session check on mount ─── */
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) { setUser(session.user); setAuthView("dashboard"); }
-      else setAuthView("landing");
+      if (session?.user) setUser(session.user);
+      setAuthView("home");
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
@@ -157,7 +157,7 @@ export default function App() {
       });
 
       setUser(data.user);
-      setAuthView("dashboard");
+      setAuthView("dashboard"); // "You're in!" confirmation screen
 
     } else {
       if (poster.password !== poster.confirmPassword) {
@@ -204,6 +204,19 @@ export default function App() {
   const tagline = role === "poster" ? "Find young talent nearby" : "Find gigs. Build skills. Earn money.";
 
   /* ─── Loading screen ─── */
+  /* ─── Homepage — renders outside the onboarding card ─── */
+  if (authView === "home") {
+    return (
+      <HomePage
+        user={user}
+        onLogin={() => setAuthView("login")}
+        onRegister={() => setAuthView("onboarding")}
+        onSignOut={() => setUser(null)}
+        onDashboard={() => setAuthView("dashboard")}
+      />
+    );
+  }
+
   if (authView === "loading") {
     return (
       <>
@@ -238,24 +251,19 @@ export default function App() {
           </div>
 
           {/* ── Auth views ── */}
-          {authView !== "onboarding" && (
+          {(authView === "login" || authView === "dashboard") && (
             <div className="gs-step in">
-              {authView === "landing" && (
-                <AuthLanding
-                  onLogin={() => setAuthView("login")}
-                  onRegister={() => setAuthView("onboarding")}
-                />
-              )}
               {authView === "login" && (
                 <LoginForm
-                  onSuccess={() => setAuthView("dashboard")}
-                  onBack={() => setAuthView("landing")}
+                  onSuccess={() => { setAuthView("home"); }}
+                  onBack={() => setAuthView("home")}
                 />
               )}
               {authView === "dashboard" && (
                 <Dashboard
                   user={user}
-                  onSignOut={() => { setUser(null); setAuthView("landing"); }}
+                  onSignOut={() => { setUser(null); setAuthView("home"); }}
+                  onBrowse={() => setAuthView("home")}
                 />
               )}
             </div>
@@ -317,7 +325,7 @@ export default function App() {
               <div className="gs-nav">
                 {step > 0
                   ? <button className="gs-back" onClick={() => go(-1)}>← Back</button>
-                  : <button className="gs-back" onClick={() => setAuthView("landing")}>← Back</button>
+                  : <button className="gs-back" onClick={() => setAuthView("home")}>← Back</button>
                 }
                 {(currentStep === "seekerReview" || currentStep === "posterReview") ? (
                   <button className={`gs-next submit ${submitting ? "disabled" : ""}`}

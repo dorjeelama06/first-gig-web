@@ -1,6 +1,6 @@
 import { supabase } from "../../lib/supabase";
 
-export default function Dashboard({ user, onSignOut }) {
+export default function Dashboard({ user, onSignOut, onBrowse }) {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     onSignOut();
@@ -32,6 +32,9 @@ export default function Dashboard({ user, onSignOut }) {
           🚧 Dashboard coming soon — your jobs and profile will appear here.
         </p>
       </div>
+      <button className="gs-next submit" style={{ width: "100%", marginBottom: 10 }} onClick={onBrowse}>
+        Browse Jobs →
+      </button>
       <button className="gs-back" style={{ width: "100%", textAlign: "center" }} onClick={handleSignOut}>
         Sign Out
       </button>
