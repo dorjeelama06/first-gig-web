@@ -27,7 +27,7 @@ function GlanceRow({ icon, label, value, sub }) {
   );
 }
 
-export default function JobDetail({ job, user, onApply, appliedJobIds = [] }) {
+export default function JobDetail({ job, user, onApply, appliedJobIds = [], onClose }) {
   const [applying, setApplying] = useState(false);
   const [justApplied, setJustApplied] = useState(false);
 
@@ -92,6 +92,11 @@ export default function JobDetail({ job, user, onApply, appliedJobIds = [] }) {
 
   return (
     <div className="gs-job-detail">
+
+      {/* Close button — only rendered on mobile via onClose prop */}
+      {onClose && (
+        <button className="gs-detail-close-btn" onClick={onClose} aria-label="Close">✕</button>
+      )}
 
       {/* ── Company header ── */}
       <div className="gs-detail-company-row">

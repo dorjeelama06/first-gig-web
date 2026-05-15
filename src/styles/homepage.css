@@ -449,14 +449,128 @@
 .gs-jobs-list::-webkit-scrollbar-thumb,
 .gs-jobs-right::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
 
+/* ── Filter bar + mobile elements (base: desktop defaults) ── */
+.gs-filter-bar            { display: flex; align-items: center; gap: 10px; width: 100%; }
+.gs-filter-btn            { display: none; }
+.gs-filter-sheet-backdrop { display: none; }
+.gs-filter-sheet          { display: none; }
+.gs-detail-close-btn      { display: none; }
+.gs-jobs-right--desktop   { display: block; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .gs-home-body { grid-template-columns: 1fr; height: auto; }
-  .gs-jobs-list { height: 50vh; border-right: none; border-bottom: 1px solid #e5e7eb; }
-  .gs-jobs-right { min-height: 60vh; }
-  .gs-navbar { padding: 0 16px; }
+  /* Layout */
+  .gs-home-body   { grid-template-columns: 1fr; height: auto; }
+  .gs-jobs-list   { height: auto; min-height: 50vh; border-right: none; border-bottom: 1px solid #e5e7eb; }
+  .gs-jobs-right  { min-height: unset; }
+  .gs-navbar      { padding: 0 16px; }
   .gs-navbar-logo { font-size: 18px; }
   .gs-home-search { padding: 12px 16px; }
   .gs-search-input { width: 100%; }
-  .gs-job-detail { padding: 24px 20px; }
+  .gs-job-detail  { padding: 24px 20px; }
+
+  /* Fix 2: Hide desktop chips, show Filter button */
+  .gs-filter-chips { display: none; }
+
+  .gs-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    padding: 10px 16px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #555;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .gs-filter-btn:hover { border-color: #FF6B35; color: #FF6B35; }
+  .gs-filter-btn.has-filter { border-color: #FF6B35; color: #FF6B35; background: rgba(255,107,53,0.05); }
+
+  /* Filter bottom sheet */
+  .gs-filter-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 299;
+  }
+  .gs-filter-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    z-index: 300;
+    max-height: 70vh;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .gs-filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: #fff;
+  }
+  .gs-filter-sheet-title { font-size: 15px; font-weight: 700; color: #1a1a2e; }
+  .gs-filter-sheet-done  {
+    padding: 6px 16px;
+    background: #FF6B35;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .gs-filter-sheet-chips { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px 24px; }
+
+  /* Fix 3: Hide desktop right panel; use overlay */
+  .gs-jobs-right--desktop { display: none; }
+
+  .gs-detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 300;
+    overflow-y: auto;
+    animation: slideUp 0.28s ease;
+    padding: 16px 0 env(safe-area-inset-bottom);
+  }
+  .gs-detail-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    border: none;
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+    margin: 0 20px 12px auto;
+    flex-shrink: 0;
+  }
+  .gs-detail-close-btn:hover { background: #e5e7eb; color: #1a1a2e; }
+}
+
+/* Safety: never show overlay on desktop even if state leaks */
+@media (min-width: 769px) {
+  .gs-detail-overlay { display: none !important; }
 }

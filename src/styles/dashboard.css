@@ -397,7 +397,10 @@
   /* Account for bottom nav height */
   .dash-body { height: calc(100vh - 56px - 58px); }
   .dash-main { padding-bottom: 0; overflow-y: auto; }
-  .dash-messages-layout { height: calc(100vh - 56px - 58px - 73px); }
+  .dash-messages-layout { height: calc(100vh - 56px - 58px - 73px); grid-template-columns: 1fr; width: 100%; overflow-x: hidden; }
+  .dash-chat-panel    { width: 100%; min-width: 0; }
+  .dash-chat-messages { min-width: 0; }
+  .dash-chat-header   { min-width: 0; }
 
   /* Bottom tab bar */
   .dash-bottom-nav {

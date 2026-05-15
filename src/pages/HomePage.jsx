@@ -16,6 +16,8 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [appliedJobIds, setAppliedJobIds] = useState([]);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [jobDetailOpen, setJobDetailOpen] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -26,7 +28,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
 
       if (!error && data) {
         setJobs(data);
-        if (data.length > 0) setSelectedJob(data[0]);
+        // No auto-select — user must tap a card on mobile
       }
       setLoading(false);
     };
@@ -64,6 +66,10 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     onSignOut();
   };
 
+  const activeCategoryLabel = activeCategory !== ALL
+    ? CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label ?? ""
+    : null;
+
   return (
     <div className="gs-home-wrap">
       <Navbar
@@ -76,12 +82,24 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
 
       {/* Search + category filters */}
       <div className="gs-home-search">
-        <input
-          className="gs-search-input"
-          placeholder="🔍  Search by job title, company, or category..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+        {/* Search bar row — on mobile wraps input + Filter button */}
+        <div className="gs-filter-bar">
+          <input
+            className="gs-search-input"
+            placeholder="🔍  Search by job title, company, or category..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {/* Mobile-only filter trigger */}
+          <button
+            className={`gs-filter-btn${activeCategory !== ALL ? " has-filter" : ""}`}
+            onClick={() => setFilterOpen(true)}
+          >
+            {activeCategoryLabel ? `${activeCategoryLabel}` : "Filter"}
+          </button>
+        </div>
+
+        {/* Desktop chips row */}
         <div className="gs-filter-chips">
           <button
             className={`gs-filter-chip ${activeCategory === ALL ? "active" : ""}`}
@@ -97,6 +115,34 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
             </button>
           ))}
         </div>
+
+        {/* Mobile filter bottom sheet */}
+        {filterOpen && (
+          <>
+            <div className="gs-filter-sheet-backdrop" onClick={() => setFilterOpen(false)} />
+            <div className="gs-filter-sheet">
+              <div className="gs-filter-sheet-header">
+                <span className="gs-filter-sheet-title">Filter by Category</span>
+                <button className="gs-filter-sheet-done" onClick={() => setFilterOpen(false)}>Done</button>
+              </div>
+              <div className="gs-filter-sheet-chips">
+                <button
+                  className={`gs-filter-chip ${activeCategory === ALL ? "active" : ""}`}
+                  onClick={() => { setActiveCategory(ALL); setFilterOpen(false); }}>
+                  All Jobs
+                </button>
+                {CATEGORY_OPTIONS.map(o => (
+                  <button
+                    key={o.id}
+                    className={`gs-filter-chip ${activeCategory === o.id ? "active" : ""}`}
+                    onClick={() => { setActiveCategory(o.id); setFilterOpen(false); }}>
+                    {o.icon} {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="gs-home-body">
@@ -127,17 +173,30 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
                 key={job.id}
                 job={job}
                 isActive={selectedJob?.id === job.id}
-                onClick={() => setSelectedJob(job)}
+                onClick={() => { setSelectedJob(job); setJobDetailOpen(true); }}
               />
             ))
           )}
         </div>
 
-        {/* Right column — job detail */}
-        <div className="gs-jobs-right">
+        {/* Desktop: right panel (always visible, shows placeholder when no job selected) */}
+        <div className="gs-jobs-right gs-jobs-right--desktop">
           <JobDetail job={selectedJob} user={user} onApply={handleApply} appliedJobIds={appliedJobIds} />
         </div>
       </div>
+
+      {/* Mobile: full-screen job detail overlay */}
+      {jobDetailOpen && selectedJob && (
+        <div className="gs-detail-overlay">
+          <JobDetail
+            job={selectedJob}
+            user={user}
+            onApply={handleApply}
+            appliedJobIds={appliedJobIds}
+            onClose={() => setJobDetailOpen(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
