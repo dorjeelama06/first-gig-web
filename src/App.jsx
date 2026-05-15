@@ -282,7 +282,7 @@ export default function App() {
           <div className="gs-header">
             <div className="gs-logo-row">
               <span className="gs-logo-icon">⚡</span>
-              <span className="gs-logo-text">GigSpark</span>
+              <span className="gs-logo-text">First Gig</span>
             </div>
             <p className="gs-tagline">
               {authView === "onboarding" ? tagline : "Find gigs. Build skills. Earn money."}

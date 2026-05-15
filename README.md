@@ -1,4 +1,4 @@
-# ⚡ GigSpark
+# ⚡ First Gig
 
 A mobile-first onboarding app for matching young job seekers with local gigs.
 
@@ -27,6 +27,6 @@ npm run dev
 Then open http://localhost:5173 in your browser.
 
 ## Live Preview
-[Open in StackBlitz](https://stackblitz.com/github/YOUR_USERNAME/gigspark-app)
+[Open in StackBlitz](https://stackblitz.com/github/YOUR_USERNAME/gig-app)
 
 > Replace `YOUR_USERNAME` with your GitHub username after pushing.

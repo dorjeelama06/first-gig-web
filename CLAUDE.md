@@ -1,5 +1,5 @@
 ## Project
-GigSpark is a mobile-first job marketplace connecting teen/young job seekers with local employers. Seekers build a profile through a guided onboarding flow and apply to posted gigs. Employers post jobs, review applicants, and initiate chat. There is no admin panel; the MVP is entirely client-side backed by Supabase.
+First Gig is a mobile-first job marketplace connecting teen/young job seekers with local employers. Seekers build a profile through a guided onboarding flow and apply to posted gigs. Employers post jobs, review applicants, and initiate chat. There is no admin panel; the MVP is entirely client-side backed by Supabase.
 
 ## Stack
 - **Frontend**: React 18 + Vite 5, pure CSS (no component library), DM Sans font

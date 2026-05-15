@@ -21,7 +21,7 @@ export default function StepDOB({ v, set, age }) {
           borderRadius: 12, color: "#FCD34D",
           fontSize: 13, lineHeight: 1.5,
         }}>
-          ⚠️ GigSpark is primarily designed for teens aged 14–18. Opportunities may be limited outside this range.
+          ⚠️ First Gig is primarily designed for teens aged 14–18. Opportunities may be limited outside this range.
         </div>
       )}
     </div>

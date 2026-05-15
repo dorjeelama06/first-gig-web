@@ -2,7 +2,7 @@ export default function Navbar({ user, onLogin, onRegister, onSignOut, onDashboa
   return (
     <nav className="gs-navbar">
       <div className="gs-navbar-logo">
-        ⚡ <span>GigSpark</span>
+        ⚡ <span>First Gig</span>
       </div>
       <div className="gs-navbar-actions">
         {user ? (
