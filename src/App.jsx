@@ -5,7 +5,8 @@ import { supabase } from "./lib/supabase";
 
 import HomePage from "./pages/HomePage";
 import LoginForm from "./components/auth/LoginForm";
-import Dashboard from "./components/auth/Dashboard";
+import SeekerDashboard from "./pages/SeekerDashboard";
+import EmployerDashboard from "./pages/EmployerDashboard";
 
 import StepRole from "./components/shared/StepRole";
 
@@ -30,13 +31,27 @@ export default function App() {
   // 'loading' | 'home' | 'login' | 'onboarding' | 'dashboard'
   const [authView, setAuthView] = useState("loading");
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Returns the role string so callers can use it immediately
+  const fetchRole = async (userId) => {
+    const { data } = await supabase.from("profiles").select("role").eq("id", userId).single();
+    const role = data?.role ?? null;
+    if (role) setUserRole(role);
+    return role;
+  };
+
   /* ─── Session check on mount ─── */
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) setUser(session.user);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        const role = await fetchRole(session.user.id);
+        // If already logged in with a known role, go straight to dashboard
+        if (role) { setAuthView("dashboard"); return; }
+      }
       setAuthView("home");
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -157,7 +172,8 @@ export default function App() {
       });
 
       setUser(data.user);
-      setAuthView("dashboard"); // "You're in!" confirmation screen
+      setUserRole("seeker");
+      setAuthView("dashboard");
 
     } else {
       if (poster.password !== poster.confirmPassword) {
@@ -195,6 +211,7 @@ export default function App() {
       });
 
       setUser(data.user);
+      setUserRole("poster");
       setAuthView("dashboard");
     }
 
@@ -205,6 +222,28 @@ export default function App() {
 
   /* ─── Loading screen ─── */
   /* ─── Homepage — renders outside the onboarding card ─── */
+  if (authView === "dashboard") {
+    const dashProps = {
+      user,
+      onSignOut: () => { setUser(null); setUserRole(null); setAuthView("home"); },
+      onBrowse: () => setAuthView("home"),
+    };
+    if (userRole === "seeker") return <SeekerDashboard {...dashProps} />;
+    if (userRole === "poster") return <EmployerDashboard {...dashProps} />;
+    // Role not loaded yet — show a simple loading screen
+    return (
+      <>
+        <style>{CSS_STYLES}</style>
+        <div className="gs-wrap">
+          <div className="gs-orb gs-orb1" /><div className="gs-orb gs-orb2" />
+          <div className="gs-card" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Loading your dashboard...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   if (authView === "home") {
     return (
       <HomePage
@@ -251,21 +290,20 @@ export default function App() {
           </div>
 
           {/* ── Auth views ── */}
-          {(authView === "login" || authView === "dashboard") && (
+          {authView === "login" && (
             <div className="gs-step in">
-              {authView === "login" && (
-                <LoginForm
-                  onSuccess={() => { setAuthView("home"); }}
-                  onBack={() => setAuthView("home")}
-                />
-              )}
-              {authView === "dashboard" && (
-                <Dashboard
-                  user={user}
-                  onSignOut={() => { setUser(null); setAuthView("home"); }}
-                  onBrowse={() => setAuthView("home")}
-                />
-              )}
+              <LoginForm
+                onSuccess={async () => {
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session?.user) {
+                    setUser(session.user);
+                    const role = await fetchRole(session.user.id);
+                    setUserRole(role);
+                  }
+                  setAuthView("dashboard");
+                }}
+                onBack={() => setAuthView("home")}
+              />
             </div>
           )}
 
