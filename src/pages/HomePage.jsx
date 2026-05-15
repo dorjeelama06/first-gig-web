@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { applyToJob, fetchAppliedJobIds } from "../lib/applications";
 import Navbar from "../components/shared/Navbar";
 import JobCard from "../components/jobs/JobCard";
 import JobDetail from "../components/jobs/JobDetail";
@@ -14,6 +15,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL);
+  const [appliedJobIds, setAppliedJobIds] = useState([]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -31,6 +33,13 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     fetchJobs();
   }, []);
 
+  // Load which jobs this seeker has already applied to
+  useEffect(() => {
+    if (user) {
+      fetchAppliedJobIds(user.id).then(setAppliedJobIds);
+    }
+  }, [user]);
+
   const filtered = jobs.filter(job => {
     const q = search.toLowerCase();
     const matchSearch = !q
@@ -41,9 +50,13 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     return matchSearch && matchCat;
   });
 
-  const handleApply = () => {
-    if (!user) onRegister();
-    else alert("Application feature coming soon! 🎉");
+  const handleApply = async (job) => {
+    if (!user) { onRegister(); return null; }
+    const result = await applyToJob(job.id, user.id, job.employer_id);
+    if (!result.alreadyApplied) {
+      setAppliedJobIds(prev => [...prev, job.id]);
+    }
+    return { success: true, alreadyApplied: result.alreadyApplied };
   };
 
   const handleSignOut = async () => {
@@ -122,7 +135,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
 
         {/* Right column — job detail */}
         <div className="gs-jobs-right">
-          <JobDetail job={selectedJob} user={user} onApply={handleApply} />
+          <JobDetail job={selectedJob} user={user} onApply={handleApply} appliedJobIds={appliedJobIds} />
         </div>
       </div>
     </div>

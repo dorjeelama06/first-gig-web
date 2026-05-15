@@ -4,7 +4,7 @@
 .gs-home-wrap {
   min-height: 100vh;
   background: #f7f8fa;
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: 'DM Sans', system-ui, Arial, sans-serif;
 }
 
 /* ── Navbar ── */
@@ -83,7 +83,7 @@
 }
 .gs-btn-filled:hover { background: #e85d25; }
 
-/* ── Search bar ── */
+/* ── Search bar: polished with subtle drop-shadow ── */
 .gs-home-search {
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
@@ -92,6 +92,9 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.055);
+  position: relative;
+  z-index: 10;
 }
 
 .gs-search-input {
@@ -104,9 +107,13 @@
   outline: none;
   color: #1a1a2e;
   background: #fafafa;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
 }
-.gs-search-input:focus { border-color: #FF6B35; background: #fff; }
+.gs-search-input:focus {
+  border-color: #FF6B35;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
 .gs-search-input::placeholder { color: #aaa; }
 
 .gs-filter-chips {
@@ -115,6 +122,7 @@
   flex-wrap: wrap;
 }
 
+/* ── Filter chips: active has checkmark prefix + stronger style ── */
 .gs-filter-chip {
   padding: 6px 14px;
   border-radius: 20px;
@@ -128,8 +136,17 @@
   transition: all 0.15s;
   white-space: nowrap;
 }
-.gs-filter-chip:hover { border-color: #FF6B35; color: #FF6B35; }
-.gs-filter-chip.active { background: #FF6B35; color: #fff; border-color: #FF6B35; }
+.gs-filter-chip:hover { border-color: #FF6B35; color: #FF6B35; background: rgba(255, 107, 53, 0.04); }
+.gs-filter-chip.active {
+  background: #FF6B35;
+  color: #fff;
+  border-color: #FF6B35;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+.gs-filter-chip.active::before {
+  content: "✓ ";
+  font-weight: 800;
+}
 
 /* ── Two-column layout ── */
 .gs-home-body {
@@ -145,15 +162,22 @@
   background: #fafafa;
 }
 
+/* ── Results count: cleaner, more prominent ── */
 .gs-results-count {
   padding: 10px 20px;
   font-size: 12px;
-  font-weight: 600;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: #777;
+  letter-spacing: 0.05em;
   border-bottom: 1px solid #eee;
   background: #f7f8fa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gs-results-count strong {
+  color: #FF6B35;
+  font-weight: 800;
 }
 
 /* ── Job card ── */
@@ -166,7 +190,12 @@
   transition: all 0.12s;
 }
 .gs-job-card:hover { background: #fffaf7; border-left-color: rgba(255,107,53,0.35); }
-.gs-job-card.active { background: #fff8f5; border-left-color: #FF6B35; }
+.gs-job-card.active {
+  background: #fff8f5;
+  border-left-color: #FF6B35;
+  border-left-width: 4px;
+  box-shadow: inset 3px 0 0 #FF6B35;
+}
 
 .gs-job-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
 .gs-job-card-title { font-weight: 700; font-size: 15px; color: #1a1a2e; margin: 0; }
@@ -179,7 +208,7 @@
 .gs-job-card-tag.cat { background: rgba(255,107,53,0.1); color: #c9521a; }
 .gs-job-card-tag.sched { background: #f0f4ff; color: #4466cc; }
 
-/* ── Empty / loading states ── */
+/* ── Empty state: cleaner layout ── */
 .gs-empty {
   display: flex;
   flex-direction: column;
@@ -188,19 +217,37 @@
   padding: 60px 24px;
   text-align: center;
 }
-.gs-empty-icon { font-size: 44px; margin-bottom: 14px; }
-.gs-empty-title { font-size: 16px; font-weight: 700; color: #555; margin: 0 0 6px; }
-.gs-empty-desc { font-size: 13px; color: #999; margin: 0; }
+.gs-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+.gs-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #444;
+  margin: 0 0 8px;
+}
+.gs-empty-desc {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0;
+  max-width: 220px;
+  line-height: 1.6;
+}
 
+/* ── Skeleton cards: improved shimmer ── */
 .gs-skeleton-card {
   padding: 16px 20px;
   border-bottom: 1px solid #eee;
   background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .gs-skeleton-line {
   border-radius: 6px;
-  margin-bottom: 8px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #efefef 25%, #e4e4e4 50%, #efefef 75%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
@@ -210,6 +257,8 @@
 .gs-jobs-right {
   overflow-y: auto;
   background: #fff;
+  display: flex;
+  justify-content: center;
 }
 
 .gs-no-selection {
@@ -224,54 +273,175 @@
   gap: 12px;
 }
 
-.gs-job-detail { padding: 32px; max-width: 680px; }
-.gs-job-detail-company { font-size: 15px; color: #FF6B35; font-weight: 700; margin: 0 0 3px; }
-.gs-job-detail-title { font-size: 26px; font-weight: 800; color: #1a1a2e; margin: 0 0 4px; }
-.gs-job-detail-location { font-size: 14px; color: #777; margin: 0 0 18px; }
-
-.gs-job-detail-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
-.gs-job-detail-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-.gs-badge-pay { background: rgba(255,107,53,0.12); color: #d45820; }
-.gs-badge-hours { background: #f0f4ff; color: #4466cc; }
-.gs-badge-age { background: #f0fff4; color: #2d8a4e; }
-.gs-badge-positions { background: #faf0ff; color: #7744cc; }
-
-.gs-apply-btn {
+/* ── Job detail panel ── */
+.gs-job-detail {
+  padding: 36px 40px;
   width: 100%;
-  padding: 14px;
+  max-width: 680px;
+  align-self: flex-start;
+}
+
+/* Company header row */
+.gs-detail-company-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.gs-detail-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #FF6B35, #FFB347);
   color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gs-detail-company-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 2px;
+}
+
+.gs-detail-company-cat {
+  font-size: 12px;
+  color: #FF6B35;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Title + posted */
+.gs-job-detail-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+
+.gs-detail-posted {
+  font-size: 13px;
+  color: #aaa;
+  margin: 0 0 22px;
+}
+
+/* Apply button row */
+.gs-detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.gs-apply-btn {
+  flex: 1;
+  padding: 13px 20px;
+  background: #FF6B35;
+  color: #fff;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: 10px;
+  font-size: 15px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  margin-bottom: 28px;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: 0.01em;
 }
-.gs-apply-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+.gs-apply-btn:hover:not(:disabled) { background: #e85d25; transform: translateY(-1px); }
+.gs-apply-btn:disabled { opacity: 0.85; }
 
-.gs-divider { border: none; border-top: 1px solid #f0f0f0; margin: 20px 0; }
+.gs-applied-note {
+  font-size: 12px;
+  color: #28a745;
+  font-weight: 600;
+  margin: 8px 0 0;
+}
 
+.gs-divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 24px 0;
+}
+
+/* Section headers */
 .gs-section-title {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   color: #bbb;
-  margin: 0 0 10px;
+  margin: 0 0 14px;
 }
 
-.gs-section-body { font-size: 14px; color: #444; line-height: 1.75; margin: 0 0 20px; }
+/* At a glance rows */
+.gs-glance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 4px;
+}
 
-.gs-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-.gs-detail-field { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 10px; padding: 12px 14px; }
-.gs-detail-field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #bbb; margin: 0 0 4px; }
-.gs-detail-field-val { font-size: 14px; color: #222; font-weight: 500; margin: 0; }
+.gs-glance-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
 
-.gs-sched-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-.gs-sched-tag { background: #f0f4ff; color: #4466cc; font-size: 13px; padding: 6px 14px; border-radius: 20px; font-weight: 500; }
+.gs-glance-icon {
+  font-size: 18px;
+  width: 26px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.gs-glance-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.gs-glance-sub {
+  font-size: 12px;
+  color: #888;
+  margin: 2px 0 0;
+}
+
+/* Description */
+.gs-section-body {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.8;
+  margin: 0 0 8px;
+  white-space: pre-line;
+}
+
+/* Requirements */
+.gs-req-row {
+  margin-bottom: 14px;
+}
+
+.gs-req-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 3px;
+}
+
+.gs-req-val {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  margin: 0;
+}
 
 /* ── Scrollbars ── */
 .gs-jobs-list::-webkit-scrollbar,
@@ -288,6 +458,5 @@
   .gs-navbar-logo { font-size: 18px; }
   .gs-home-search { padding: 12px 16px; }
   .gs-search-input { width: 100%; }
-  .gs-job-detail { padding: 20px 16px; }
-  .gs-detail-grid { grid-template-columns: 1fr; }
+  .gs-job-detail { padding: 24px 20px; }
 }
