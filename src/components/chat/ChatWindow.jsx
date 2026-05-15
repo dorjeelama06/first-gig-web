@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchMessages, sendMessage, subscribeToMessages, markMessagesAsRead } from "../../lib/chat";
 
-export default function ChatWindow({ conversation, userId, role }) {
+export default function ChatWindow({ conversation, userId, role, onBack }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -68,6 +68,9 @@ export default function ChatWindow({ conversation, userId, role }) {
   return (
     <div className="dash-chat-panel">
       <div className="dash-chat-header">
+        {onBack && (
+          <button className="dash-chat-back" onClick={onBack} aria-label="Back">‹</button>
+        )}
         <div className="dash-chat-avatar">{otherName?.[0] ?? "?"}</div>
         <div>
           <p className="dash-chat-hname">{otherName}</p>

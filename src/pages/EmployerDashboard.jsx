@@ -325,7 +325,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                 <p className="dash-page-title">Messages</p>
                 <p className="dash-page-sub">Your conversations with applicants</p>
               </div>
-              <div className="dash-messages-layout">
+              <div className={`dash-messages-layout${activeConvo ? " has-active" : ""}`}>
                 <div className="dash-convo-panel">
                   <div className="dash-convo-search">
                     <input placeholder="🔍  Search conversations..." />
@@ -339,7 +339,12 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                     />
                   </div>
                 </div>
-                <ChatWindow conversation={activeConvo} userId={user.id} role="poster" />
+                <ChatWindow
+                  conversation={activeConvo}
+                  userId={user.id}
+                  role="poster"
+                  onBack={() => setActiveConvo(null)}
+                />
               </div>
             </>
           )}
@@ -374,6 +379,21 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
 
         </main>
       </div>
+
+      {/* Mobile bottom nav */}
+      <nav className="dash-bottom-nav">
+        {navItems.map(item => (
+          <div
+            key={item.id}
+            className={`dash-bottom-nav-item${tab === item.id ? " active" : ""}`}
+            onClick={() => setTab(item.id)}
+          >
+            {item.badge > 0 && <span className="dash-bottom-nav-badge">{item.badge}</span>}
+            <span className="dash-bottom-nav-icon">{item.icon}</span>
+            <span>{item.label}</span>
+          </div>
+        ))}
+      </nav>
     </div>
   );
 }

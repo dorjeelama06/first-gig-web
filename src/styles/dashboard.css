@@ -381,10 +381,90 @@
   flex-shrink: 0;
 }
 
-/* ── Responsive ── */
+/* ── Bottom nav (mobile) ── */
+.dash-bottom-nav { display: none; }
+
+/* ── Responsive: tablet ── */
 @media (max-width: 900px) {
   .dash-body { grid-template-columns: 1fr; }
   .dash-sidebar { display: none; }
   .dash-messages-layout { grid-template-columns: 1fr; }
   .dash-stats { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Responsive: phone ── */
+@media (max-width: 768px) {
+  /* Account for bottom nav height */
+  .dash-body { height: calc(100vh - 56px - 58px); }
+  .dash-main { padding-bottom: 0; overflow-y: auto; }
+  .dash-messages-layout { height: calc(100vh - 56px - 58px - 73px); }
+
+  /* Bottom tab bar */
+  .dash-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1.5px solid #e5e7eb;
+    z-index: 200;
+    height: 58px;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .dash-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #999;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .dash-bottom-nav-item.active { color: #FF6B35; }
+  .dash-bottom-nav-icon { font-size: 20px; line-height: 1; }
+
+  .dash-bottom-nav-badge {
+    position: absolute;
+    top: 5px;
+    right: calc(50% - 22px);
+    background: #FF6B35;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  /* Messages: show convo list OR chat, never both */
+  .dash-messages-layout .dash-chat-panel,
+  .dash-messages-layout .dash-no-chat { display: none; }
+
+  .dash-messages-layout.has-active .dash-convo-panel { display: none; }
+  .dash-messages-layout.has-active .dash-chat-panel  { display: flex; }
+
+  /* Back button in chat header */
+  .dash-chat-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #FF6B35;
+    cursor: pointer;
+    padding: 0 6px 0 0;
+    line-height: 1;
+    flex-shrink: 0;
+  }
 }
