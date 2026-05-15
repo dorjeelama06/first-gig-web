@@ -454,7 +454,19 @@
   .dash-messages-layout .dash-no-chat { display: none; }
 
   .dash-messages-layout.has-active .dash-convo-panel { display: none; }
-  .dash-messages-layout.has-active .dash-chat-panel  { display: flex; }
+
+  /* Fix: bypass grid cell constraints — chat fills viewport edge-to-edge */
+  .dash-messages-layout.has-active .dash-chat-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 137px;   /* 64px navbar + 73px messages page-header */
+    bottom: 58px; /* bottom nav */
+    z-index: 100;
+    display: flex;
+    width: 100%;
+    min-width: unset;
+  }
 
   /* Back button in chat header */
   .dash-chat-back {
