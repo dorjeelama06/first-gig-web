@@ -91,6 +91,7 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  min-width: 0; /* prevent grid blowout */
 }
 
 .dash-page-header {
@@ -191,6 +192,8 @@
   grid-template-columns: 280px 1fr;
   height: calc(100vh - 64px - 81px);
   overflow: hidden;
+  width: 100%;  /* fill .dash-main's flex width */
+  min-width: 0; /* prevent grid blowout */
 }
 
 .dash-convo-panel {
@@ -244,6 +247,7 @@
   flex-direction: column;
   background: #fff;
   overflow: hidden;
+  min-width: 0; /* prevent content from blowing out the 1fr column */
 }
 
 .dash-chat-header {
@@ -280,6 +284,7 @@
   flex-direction: column;
   gap: 10px;
   background: #f9f9fb;
+  min-width: 0; /* prevent overflow from long messages */
 }
 
 .dash-date-divider {
@@ -455,14 +460,12 @@
 
   .dash-messages-layout.has-active .dash-convo-panel { display: none; }
 
-  /* Fix: bypass grid cell constraints — chat fills viewport edge-to-edge */
+  /* Fix: full-screen chat overlay — covers everything including navbar */
   .dash-messages-layout.has-active .dash-chat-panel {
     position: fixed;
-    left: 0;
-    right: 0;
-    top: 137px;   /* 64px navbar + 73px messages page-header */
-    bottom: 58px; /* bottom nav */
-    z-index: 100;
+    inset: 0;          /* top/right/bottom/left all = 0 → true full viewport */
+    bottom: 58px;      /* leave room for bottom nav */
+    z-index: 210;      /* above bottom nav (200) and navbar (150) */
     display: flex;
     width: 100%;
     min-width: unset;
