@@ -280,7 +280,15 @@ export default function App() {
 
           {/* Header */}
           <div className="gs-header">
-            <div className="gs-logo-row">
+            <div
+              className="gs-logo-row"
+              onClick={() => setAuthView("home")}
+              style={{ cursor: "pointer" }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setAuthView("home"); }}
+              aria-label="Go to home page"
+            >
               <span className="gs-logo-icon">⚡</span>
               <span className="gs-logo-text">First Gig</span>
             </div>

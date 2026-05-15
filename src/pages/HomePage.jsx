@@ -78,6 +78,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
         onRegister={onRegister}
         onSignOut={handleSignOut}
         onDashboard={onDashboard}
+        onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
 
       {/* Search + category filters */}

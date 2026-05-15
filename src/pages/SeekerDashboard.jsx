@@ -61,7 +61,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
   return (
     <div className="dash-wrap">
-      <Navbar user={user} onLogin={() => {}} onRegister={() => {}} onSignOut={onSignOut} onDashboard={() => {}} />
+      <Navbar user={user} onLogin={() => {}} onRegister={() => {}} onSignOut={onSignOut} onDashboard={() => {}} onHome={onBrowse} />
 
       <div className="dash-body">
         {/* Sidebar */}
