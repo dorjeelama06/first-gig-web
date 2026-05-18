@@ -9,6 +9,10 @@ import { supabase } from "../lib/supabase";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
 
+const INPUT = { width: "100%", padding: "10px 12px", border: "1.5px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", color: "#1a1a2e" };
+const LABEL = { display: "block", fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 };
+const FIELD = { marginBottom: 14 };
+
 const STATUS_LABELS = {
   pending:  { label: "New",      cls: "badge-orange" },
   reviewed: { label: "Reviewed", cls: "badge-blue"   },
@@ -20,7 +24,54 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [tab, setTab] = useState("overview");
   const [activeConvo, setActiveConvo] = useState(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
-  const [editingJob, setEditingJob] = useState(null); // job object being edited
+  const [editingJob, setEditingJob] = useState(null);
+
+  // Company profile editing
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const startEditingProfile = () => {
+    setEditForm({
+      companyName:   profile?.company_name   ?? "",
+      contactName:   profile?.contact_name   ?? "",
+      contactEmail:  profile?.contact_email  ?? "",
+      contactPhone:  profile?.contact_phone  ?? "",
+      companyZip:    profile?.company_zip    ?? "",
+    });
+    setSaveError("");
+    setEditingProfile(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.companyName.trim()) { setSaveError("Company name is required."); return; }
+    setSaveError("");
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("employers").update({
+        company_name:  editForm.companyName.trim(),
+        contact_name:  editForm.contactName.trim(),
+        contact_email: editForm.contactEmail.trim(),
+        contact_phone: editForm.contactPhone.trim(),
+        company_zip:   editForm.companyZip.trim(),
+      }).eq("id", user.id);
+      if (error) throw error;
+      setProfile(p => ({
+        ...p,
+        company_name:  editForm.companyName.trim(),
+        contact_name:  editForm.contactName.trim(),
+        contact_email: editForm.contactEmail.trim(),
+        contact_phone: editForm.contactPhone.trim(),
+        company_zip:   editForm.companyZip.trim(),
+      }));
+      setEditingProfile(false);
+    } catch (e) {
+      setSaveError(e.message ?? "Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Real data
   const [profile, setProfile] = useState(null);
@@ -408,27 +459,84 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
           {/* ── Settings ── */}
           {tab === "settings" && (
             <>
-              <div className="dash-page-header">
-                <p className="dash-page-title">Settings</p>
-                <p className="dash-page-sub">Your company profile</p>
+              <div className="dash-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <p className="dash-page-title">Settings</p>
+                  <p className="dash-page-sub">Your company profile</p>
+                </div>
+                {!editingProfile && (
+                  <button onClick={startEditingProfile} style={{ padding: "8px 16px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                    ✏️ Edit Profile
+                  </button>
+                )}
               </div>
               <div className="dash-content">
-                <div className="dash-list">
-                  {[
-                    { label: "Company Name",   val: profile?.company_name },
-                    { label: "Contact Person", val: profile?.contact_name },
-                    { label: "Email",          val: profile?.contact_email },
-                    { label: "Phone",          val: profile?.contact_phone },
-                    { label: "Business Zip",   val: profile?.company_zip },
-                  ].map((f, i) => (
-                    <div key={i} className="dash-list-item">
-                      <div className="dash-list-left">
-                        <p className="dash-list-title">{f.label}</p>
-                        <p className="dash-list-sub">{f.val ?? "—"}</p>
+
+                {/* ── View mode ── */}
+                {!editingProfile && (
+                  <div className="dash-list">
+                    {[
+                      { label: "Company Name",   val: profile?.company_name },
+                      { label: "Contact Person", val: profile?.contact_name },
+                      { label: "Email",          val: profile?.contact_email },
+                      { label: "Phone",          val: profile?.contact_phone },
+                      { label: "Business Zip",   val: profile?.company_zip },
+                    ].map((f, i) => (
+                      <div key={i} className="dash-list-item">
+                        <div className="dash-list-left">
+                          <p className="dash-list-title">{f.label}</p>
+                          <p className="dash-list-sub">{f.val ?? "—"}</p>
+                        </div>
+                        <span className={`dash-badge ${f.val ? "badge-green" : "badge-gray"}`}>
+                          {f.val ? "✓" : "Missing"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Edit mode ── */}
+                {editingProfile && (
+                  <div>
+                    <div style={FIELD}>
+                      <label style={LABEL}>Company Name *</label>
+                      <input style={INPUT} value={editForm.companyName} onChange={e => setEditForm(f => ({ ...f, companyName: e.target.value }))} placeholder="Acme Corp" />
+                    </div>
+                    <div style={FIELD}>
+                      <label style={LABEL}>Contact Person</label>
+                      <input style={INPUT} value={editForm.contactName} onChange={e => setEditForm(f => ({ ...f, contactName: e.target.value }))} placeholder="Jane Smith" />
+                    </div>
+                    <div style={FIELD}>
+                      <label style={LABEL}>Email</label>
+                      <input style={INPUT} type="email" value={editForm.contactEmail} onChange={e => setEditForm(f => ({ ...f, contactEmail: e.target.value }))} placeholder="jane@company.com" />
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>Phone</label>
+                        <input style={INPUT} value={editForm.contactPhone} onChange={e => setEditForm(f => ({ ...f, contactPhone: e.target.value }))} placeholder="(555) 000-0000" />
+                      </div>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>Business Zip</label>
+                        <input style={INPUT} value={editForm.companyZip} onChange={e => setEditForm(f => ({ ...f, companyZip: e.target.value }))} placeholder="10001" maxLength={10} />
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {saveError && (
+                      <p style={{ padding: "8px 12px", background: "rgba(255,100,100,0.08)", border: "1px solid rgba(255,100,100,0.2)", borderRadius: 8, color: "#c0392b", fontSize: 13, marginBottom: 14 }}>
+                        {saveError}
+                      </p>
+                    )}
+
+                    <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                      <button onClick={() => setEditingProfile(false)} style={{ flex: 1, padding: "11px", background: "transparent", border: "1.5px solid #e5e7eb", borderRadius: 10, color: "#888", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                        Cancel
+                      </button>
+                      <button onClick={handleSaveProfile} disabled={saving} style={{ flex: 2, padding: "11px", background: saving ? "#ccc" : "linear-gradient(135deg, #22C55E, #16A34A)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                        {saving ? "Saving..." : "Save Changes ✓"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
