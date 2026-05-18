@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/shared/Navbar";
 import ChatWindow from "../components/chat/ChatWindow";
 import ConversationList from "../components/chat/ConversationList";
+import PostJobModal from "../components/employer/PostJobModal";
 import { fetchEmployerApplicants, updateApplicationStatus, subscribeToNewApplications } from "../lib/applications";
 import { getOrCreateConversation, fetchConversationById, fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { supabase } from "../lib/supabase";
@@ -18,6 +19,7 @@ const STATUS_LABELS = {
 export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [tab, setTab] = useState("overview");
   const [activeConvo, setActiveConvo] = useState(null);
+  const [postJobOpen, setPostJobOpen] = useState(false);
 
   // Real data
   const [profile, setProfile] = useState(null);
@@ -35,10 +37,11 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   }, [user.id]);
 
   // Fetch employer's job listings
-  useEffect(() => {
+  const refreshJobs = () => {
     supabase.from("jobs").select("*").eq("employer_id", user.id).order("created_at", { ascending: false })
       .then(({ data }) => { if (data) setEmployerJobs(data); });
-  }, [user.id]);
+  };
+  useEffect(refreshJobs, [user.id]);
 
   // Real-time unread count
   useEffect(() => {
@@ -168,7 +171,12 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                 <div className="dash-list">
                   {employerJobs.length === 0 ? (
                     <div style={{ padding: "16px 0", textAlign: "center" }}>
-                      <p style={{ color: "#bbb", fontSize: 13 }}>No jobs posted yet</p>
+                      <p style={{ color: "#bbb", fontSize: 13, marginBottom: 10 }}>No jobs posted yet</p>
+                      <button
+                        onClick={() => setPostJobOpen(true)}
+                        style={{ padding: "8px 18px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                        + Post a Job
+                      </button>
                     </div>
                   ) : employerJobs.slice(0, 3).map(j => (
                     <div key={j.id} className="dash-list-item">
@@ -214,7 +222,9 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   <p className="dash-page-title">My Jobs</p>
                   <p className="dash-page-sub">{employerJobs.length} listing{employerJobs.length !== 1 ? "s" : ""}</p>
                 </div>
-                <button style={{ padding: "9px 18px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                <button
+                  onClick={() => setPostJobOpen(true)}
+                  style={{ padding: "9px 18px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
                   + Post New Job
                 </button>
               </div>
@@ -223,6 +233,12 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   <div style={{ textAlign: "center", padding: 48 }}>
                     <p style={{ fontSize: 36, margin: "0 0 10px" }}>📋</p>
                     <p style={{ color: "#bbb", fontWeight: 600, fontSize: 14 }}>No jobs posted yet</p>
+                    <p style={{ color: "#ccc", fontSize: 12, margin: "4px 0 16px" }}>Post your first job to start receiving applications</p>
+                    <button
+                      onClick={() => setPostJobOpen(true)}
+                      style={{ padding: "10px 24px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                      + Post Your First Job
+                    </button>
                   </div>
                 ) : (
                   <div className="dash-list">
@@ -379,6 +395,19 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
 
         </main>
       </div>
+
+      {/* Post New Job modal */}
+      {postJobOpen && (
+        <PostJobModal
+          userId={user.id}
+          onClose={() => setPostJobOpen(false)}
+          onSuccess={() => {
+            setPostJobOpen(false);
+            refreshJobs();
+            setTab("jobs");
+          }}
+        />
+      )}
 
       {/* Mobile bottom nav */}
       <nav className="dash-bottom-nav">
