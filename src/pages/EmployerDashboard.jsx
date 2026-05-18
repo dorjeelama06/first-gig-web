@@ -124,9 +124,6 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
             ))}
           </nav>
           <div style={{ padding: "16px 20px", borderTop: "1px solid #f0f0f0" }}>
-            <button onClick={onBrowse} style={{ width: "100%", padding: "9px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", marginBottom: 8 }}>
-              Browse Jobs →
-            </button>
             <button onClick={onSignOut} style={{ width: "100%", padding: "9px", background: "transparent", color: "#999", border: "1.5px solid #eee", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
               Sign Out
             </button>
