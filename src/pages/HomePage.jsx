@@ -24,6 +24,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
       const { data, error } = await supabase
         .from("jobs")
         .select("*, employers(company_name)")
+        .or("is_closed.eq.false,is_closed.is.null")
         .order("created_at", { ascending: false });
 
       if (!error && data) {

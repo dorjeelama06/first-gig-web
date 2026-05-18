@@ -20,6 +20,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [tab, setTab] = useState("overview");
   const [activeConvo, setActiveConvo] = useState(null);
   const [postJobOpen, setPostJobOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null); // job object being edited
 
   // Real data
   const [profile, setProfile] = useState(null);
@@ -65,6 +66,11 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
     });
     return unsubscribe;
   }, [user.id]);
+
+  const handleToggleClose = async (job) => {
+    const { error } = await supabase.from("jobs").update({ is_closed: !job.is_closed }).eq("id", job.id);
+    if (!error) refreshJobs();
+  };
 
   const handleMessageApplicant = async (applicant) => {
     setMessagingId(applicant.id);
@@ -212,53 +218,90 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
           )}
 
           {/* ── My Jobs ── */}
-          {tab === "jobs" && (
-            <>
-              <div className="dash-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <p className="dash-page-title">My Jobs</p>
-                  <p className="dash-page-sub">{employerJobs.length} listing{employerJobs.length !== 1 ? "s" : ""}</p>
+          {tab === "jobs" && (() => {
+            const activeJobs = employerJobs.filter(j => !j.is_closed);
+            const closedJobs = employerJobs.filter(j =>  j.is_closed);
+            return (
+              <>
+                <div className="dash-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <p className="dash-page-title">My Jobs</p>
+                    <p className="dash-page-sub">{activeJobs.length} active · {closedJobs.length} closed</p>
+                  </div>
+                  <button onClick={() => setPostJobOpen(true)} style={{ padding: "9px 18px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                    + Post New Job
+                  </button>
                 </div>
-                <button
-                  onClick={() => setPostJobOpen(true)}
-                  style={{ padding: "9px 18px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-                  + Post New Job
-                </button>
-              </div>
-              <div className="dash-content">
-                {employerJobs.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: 48 }}>
-                    <p style={{ fontSize: 36, margin: "0 0 10px" }}>📋</p>
-                    <p style={{ color: "#bbb", fontWeight: 600, fontSize: 14 }}>No jobs posted yet</p>
-                    <p style={{ color: "#ccc", fontSize: 12, margin: "4px 0 16px" }}>Post your first job to start receiving applications</p>
-                    <button
-                      onClick={() => setPostJobOpen(true)}
-                      style={{ padding: "10px 24px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                      + Post Your First Job
-                    </button>
-                  </div>
-                ) : (
-                  <div className="dash-list">
-                    {employerJobs.map(j => {
-                      const jobApplicants = applicants.filter(a => a.jobs?.id === j.id);
-                      return (
-                        <div key={j.id} className="dash-list-item">
-                          <div className="dash-list-left">
-                            <p className="dash-list-title">{j.job_title}</p>
-                            <p className="dash-list-sub">{j.positions_count} opening{j.positions_count !== 1 ? "s" : ""} · Posted {new Date(j.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                <div className="dash-content">
+                  {employerJobs.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: 48 }}>
+                      <p style={{ fontSize: 36, margin: "0 0 10px" }}>📋</p>
+                      <p style={{ color: "#bbb", fontWeight: 600, fontSize: 14 }}>No jobs posted yet</p>
+                      <p style={{ color: "#ccc", fontSize: 12, margin: "4px 0 16px" }}>Post your first job to start receiving applications</p>
+                      <button onClick={() => setPostJobOpen(true)} style={{ padding: "10px 24px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                        + Post Your First Job
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Active listings */}
+                      {activeJobs.length > 0 && (
+                        <>
+                          <p className="dash-section-title">Active Listings</p>
+                          <div className="dash-list" style={{ marginBottom: 28 }}>
+                            {activeJobs.map(j => {
+                              const jobApplicants = applicants.filter(a => a.jobs?.id === j.id);
+                              return (
+                                <div key={j.id} className="dash-list-item" style={{ flexWrap: "wrap", gap: 10 }}>
+                                  <div className="dash-list-left">
+                                    <p className="dash-list-title">{j.job_title}</p>
+                                    <p className="dash-list-sub">{j.positions_count} opening{j.positions_count !== 1 ? "s" : ""} · Posted {new Date(j.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                                  </div>
+                                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                                    <span className="dash-badge badge-blue">{jobApplicants.length} applicant{jobApplicants.length !== 1 ? "s" : ""}</span>
+                                    <span className="dash-badge badge-green">Active</span>
+                                    <button onClick={() => setEditingJob(j)} style={{ fontSize: 12, padding: "4px 12px", background: "#fff", color: "#555", border: "1.5px solid #e0e0e0", borderRadius: 7, fontWeight: 600, cursor: "pointer" }}>
+                                      ✏️ Edit
+                                    </button>
+                                    <button onClick={() => handleToggleClose(j)} style={{ fontSize: 12, padding: "4px 12px", background: "#fff", color: "#888", border: "1.5px solid #e0e0e0", borderRadius: 7, fontWeight: 600, cursor: "pointer" }}>
+                                      ✓ Mark Filled
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                            <span className="dash-badge badge-blue">{jobApplicants.length} applicant{jobApplicants.length !== 1 ? "s" : ""}</span>
-                            <span className="dash-badge badge-green">Active</span>
+                        </>
+                      )}
+
+                      {/* Closed listings */}
+                      {closedJobs.length > 0 && (
+                        <>
+                          <p className="dash-section-title" style={{ color: "#aaa" }}>Closed Listings</p>
+                          <div className="dash-list">
+                            {closedJobs.map(j => (
+                              <div key={j.id} className="dash-list-item" style={{ opacity: 0.7, flexWrap: "wrap", gap: 10 }}>
+                                <div className="dash-list-left">
+                                  <p className="dash-list-title">{j.job_title}</p>
+                                  <p className="dash-list-sub">Closed · Posted {new Date(j.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                                </div>
+                                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                  <span className="dash-badge badge-gray">Filled</span>
+                                  <button onClick={() => handleToggleClose(j)} style={{ fontSize: 12, padding: "4px 12px", background: "#fff", color: "#FF6B35", border: "1.5px solid #FF6B35", borderRadius: 7, fontWeight: 600, cursor: "pointer" }}>
+                                    Reopen
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            );
+          })()}
 
           {/* ── Applicants ── */}
           {tab === "applicants" && (
@@ -398,11 +441,18 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
         <PostJobModal
           userId={user.id}
           onClose={() => setPostJobOpen(false)}
-          onSuccess={() => {
-            setPostJobOpen(false);
-            refreshJobs();
-            setTab("jobs");
-          }}
+          onSuccess={() => { setPostJobOpen(false); refreshJobs(); setTab("jobs"); }}
+        />
+      )}
+
+      {/* Edit Job modal */}
+      {editingJob && (
+        <PostJobModal
+          userId={user.id}
+          jobId={editingJob.id}
+          initialData={editingJob}
+          onClose={() => setEditingJob(null)}
+          onSuccess={() => { setEditingJob(null); refreshJobs(); }}
         />
       )}
 
