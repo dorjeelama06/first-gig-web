@@ -5,8 +5,14 @@ import ConversationList from "../components/chat/ConversationList";
 import { fetchSeekerApplications } from "../lib/applications";
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { supabase } from "../lib/supabase";
+import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
+
+const INPUT  = { width: "100%", padding: "10px 12px", border: "1.5px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", color: "#1a1a2e" };
+const LABEL  = { display: "block", fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 };
+const FIELD  = { marginBottom: 14 };
+const CHIP   = (active) => ({ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 50, border: `1.5px solid ${active ? "#FF6B35" : "#e5e7eb"}`, background: active ? "rgba(255,107,53,0.07)" : "#fff", color: active ? "#FF6B35" : "#555", fontWeight: active ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginRight: 6, marginBottom: 6 });
 
 const STATUS_STYLE = {
   pending:  { cls: "badge-orange", label: "Under Review"        },
@@ -24,6 +30,77 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
   const [applications, setApplications] = useState([]);
   const [appsLoading, setAppsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Profile editing
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const startEditing = () => {
+    setEditForm({
+      firstName:    profile?.first_name    ?? "",
+      lastName:     profile?.last_name     ?? "",
+      phone:        profile?.phone         ?? "",
+      zipCode:      profile?.zip_code      ?? "",
+      parentEmail:  profile?.parent_email  ?? "",
+      availability: profile?.availability  ?? [],
+      interests:    profile?.interests     ?? [],
+      distance:     profile?.distance      ?? "",
+      customInterest: "",
+    });
+    setSaveError("");
+    setEditing(true);
+  };
+
+  const ef = (field, val) => setEditForm(f => ({ ...f, [field]: val }));
+  const toggleArr = (field, item) => setEditForm(f => ({
+    ...f,
+    [field]: f[field].includes(item) ? f[field].filter(i => i !== item) : [...f[field], item],
+  }));
+  const addCustomInterest = () => {
+    const val = editForm.customInterest.trim();
+    if (val && !editForm.interests.includes(val)) {
+      ef("interests", [...editForm.interests, val]);
+      ef("customInterest", "");
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.firstName.trim()) { setSaveError("First name is required."); return; }
+    setSaveError("");
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("seekers").update({
+        first_name:   editForm.firstName.trim(),
+        last_name:    editForm.lastName.trim(),
+        phone:        editForm.phone.trim(),
+        zip_code:     editForm.zipCode.trim(),
+        parent_email: editForm.parentEmail.trim(),
+        availability: editForm.availability,
+        interests:    editForm.interests,
+        distance:     editForm.distance,
+      }).eq("id", user.id);
+      if (error) throw error;
+      // Update local state immediately — no re-fetch needed
+      setProfile(p => ({
+        ...p,
+        first_name:   editForm.firstName.trim(),
+        last_name:    editForm.lastName.trim(),
+        phone:        editForm.phone.trim(),
+        zip_code:     editForm.zipCode.trim(),
+        parent_email: editForm.parentEmail.trim(),
+        availability: editForm.availability,
+        interests:    editForm.interests,
+        distance:     editForm.distance,
+      }));
+      setEditing(false);
+    } catch (e) {
+      setSaveError(e.message ?? "Failed to save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Fetch seeker profile
   useEffect(() => {
@@ -246,33 +323,143 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
           {/* ── Profile ── */}
           {tab === "profile" && (
             <>
-              <div className="dash-page-header">
-                <p className="dash-page-title">My Profile</p>
-                <p className="dash-page-sub">Your info as employers see it</p>
-              </div>
-              <div className="dash-content">
-                <div className="dash-list">
-                  {[
-                    { label: "Name",              val: fullName,                                            done: !!profile?.first_name },
-                    { label: "Email",             val: profile?.email,                                      done: !!profile?.email },
-                    { label: "Phone",             val: profile?.phone,                                      done: !!profile?.phone },
-                    { label: "Zip Code",          val: profile?.zip_code,                                   done: !!profile?.zip_code },
-                    { label: "Interests",         val: profile?.interests?.join(", "),                      done: profile?.interests?.length > 0 },
-                    { label: "Availability",      val: profile?.availability?.join(", "),                   done: profile?.availability?.length > 0 },
-                    { label: "Travel Distance",   val: profile?.distance,                                   done: !!profile?.distance },
-                    { label: "Parent / Guardian", val: profile?.parent_email,                               done: !!profile?.parent_email },
-                  ].map((f, i) => (
-                    <div key={i} className="dash-list-item">
-                      <div className="dash-list-left">
-                        <p className="dash-list-title">{f.label}</p>
-                        <p className="dash-list-sub">{f.val || "Not provided"}</p>
-                      </div>
-                      <span className={`dash-badge ${f.done ? "badge-green" : "badge-gray"}`}>
-                        {f.done ? "✓ Complete" : "Missing"}
-                      </span>
-                    </div>
-                  ))}
+              <div className="dash-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <p className="dash-page-title">My Profile</p>
+                  <p className="dash-page-sub">Your info as employers see it</p>
                 </div>
+                {!editing && (
+                  <button onClick={startEditing} style={{ padding: "8px 16px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                    ✏️ Edit Profile
+                  </button>
+                )}
+              </div>
+
+              <div className="dash-content">
+                {/* ── View mode ── */}
+                {!editing && (
+                  <div className="dash-list">
+                    {[
+                      { label: "Name",              val: fullName,                                                              done: !!profile?.first_name },
+                      { label: "Email",             val: profile?.email,                                                        done: !!profile?.email },
+                      { label: "Phone",             val: profile?.phone,                                                        done: !!profile?.phone },
+                      { label: "Zip Code",          val: profile?.zip_code,                                                     done: !!profile?.zip_code },
+                      { label: "Interests",         val: profile?.interests?.length > 0 ? profile.interests.join(", ") : null,  done: profile?.interests?.length > 0 },
+                      { label: "Availability",      val: profile?.availability?.length > 0
+                          ? profile.availability.map(id => AVAILABILITY_OPTIONS.find(o => o.id === id)?.label ?? id).join(", ")
+                          : null,                                                                                                done: profile?.availability?.length > 0 },
+                      { label: "Travel Distance",   val: profile?.distance ? `${profile.distance} mi` : null,                  done: !!profile?.distance },
+                      { label: "Parent / Guardian", val: profile?.parent_email,                                                 done: !!profile?.parent_email },
+                    ].map((f, i) => (
+                      <div key={i} className="dash-list-item">
+                        <div className="dash-list-left">
+                          <p className="dash-list-title">{f.label}</p>
+                          <p className="dash-list-sub">{f.val || "Not provided"}</p>
+                        </div>
+                        <span className={`dash-badge ${f.done ? "badge-green" : "badge-gray"}`}>
+                          {f.done ? "✓" : "Missing"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Edit mode ── */}
+                {editing && (
+                  <div>
+                    {/* Name */}
+                    <div style={{ display: "flex", gap: 10, marginBottom: 0 }}>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>First Name *</label>
+                        <input style={INPUT} value={editForm.firstName} onChange={e => ef("firstName", e.target.value)} placeholder="First name" />
+                      </div>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>Last Name</label>
+                        <input style={INPUT} value={editForm.lastName} onChange={e => ef("lastName", e.target.value)} placeholder="Last name" />
+                      </div>
+                    </div>
+
+                    {/* Phone + Zip */}
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>Phone</label>
+                        <input style={INPUT} value={editForm.phone} onChange={e => ef("phone", e.target.value)} placeholder="(555) 000-0000" />
+                      </div>
+                      <div style={{ ...FIELD, flex: 1 }}>
+                        <label style={LABEL}>Zip Code</label>
+                        <input style={INPUT} value={editForm.zipCode} onChange={e => ef("zipCode", e.target.value)} placeholder="10001" maxLength={10} />
+                      </div>
+                    </div>
+
+                    {/* Parent email */}
+                    <div style={FIELD}>
+                      <label style={LABEL}>Parent / Guardian Email</label>
+                      <input style={INPUT} value={editForm.parentEmail} onChange={e => ef("parentEmail", e.target.value)} placeholder="parent@email.com" type="email" />
+                    </div>
+
+                    {/* Availability */}
+                    <div style={FIELD}>
+                      <label style={LABEL}>Availability</label>
+                      <div style={{ marginTop: 6 }}>
+                        {AVAILABILITY_OPTIONS.map(o => (
+                          <button key={o.id} onClick={() => toggleArr("availability", o.id)} style={CHIP(editForm.availability.includes(o.id))}>
+                            {o.icon} {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Interests */}
+                    <div style={FIELD}>
+                      <label style={LABEL}>Interests</label>
+                      <div style={{ marginTop: 6, marginBottom: 8 }}>
+                        {CATEGORY_OPTIONS.map(o => (
+                          <button key={o.id} onClick={() => toggleArr("interests", o.id)} style={CHIP(editForm.interests.includes(o.id))}>
+                            {o.icon} {o.label}
+                          </button>
+                        ))}
+                        {editForm.interests.filter(i => !CATEGORY_OPTIONS.find(o => o.id === i)).map(i => (
+                          <button key={i} onClick={() => toggleArr("interests", i)} style={CHIP(true)}>
+                            ✨ {i}
+                          </button>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <input style={{ ...INPUT, flex: 1 }} value={editForm.customInterest} onChange={e => ef("customInterest", e.target.value)} placeholder="Add custom interest..." onKeyDown={e => e.key === "Enter" && addCustomInterest()} />
+                        <button onClick={addCustomInterest} style={{ padding: "10px 14px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                      </div>
+                    </div>
+
+                    {/* Distance */}
+                    <div style={FIELD}>
+                      <label style={LABEL}>Max Travel Distance</label>
+                      <div style={{ marginTop: 6 }}>
+                        {DISTANCE_OPTIONS.map(o => (
+                          <button key={o.id} onClick={() => ef("distance", o.id)} style={CHIP(editForm.distance === o.id)}>
+                            {o.icon} {o.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Error */}
+                    {saveError && (
+                      <p style={{ padding: "8px 12px", background: "rgba(255,100,100,0.08)", border: "1px solid rgba(255,100,100,0.2)", borderRadius: 8, color: "#c0392b", fontSize: 13, marginBottom: 14 }}>
+                        {saveError}
+                      </p>
+                    )}
+
+                    {/* Actions */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                      <button onClick={() => setEditing(false)} style={{ flex: 1, padding: "11px", background: "transparent", border: "1.5px solid #e5e7eb", borderRadius: 10, color: "#888", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                        Cancel
+                      </button>
+                      <button onClick={handleSaveProfile} disabled={saving} style={{ flex: 2, padding: "11px", background: saving ? "#ccc" : "linear-gradient(135deg, #22C55E, #16A34A)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+                        {saving ? "Saving..." : "Save Changes ✓"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
