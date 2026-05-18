@@ -337,32 +337,120 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
               <div className="dash-content">
                 {/* ── View mode ── */}
-                {!editing && (
-                  <div className="dash-list">
-                    {[
-                      { label: "Name",              val: fullName,                                                              done: !!profile?.first_name },
-                      { label: "Email",             val: profile?.email,                                                        done: !!profile?.email },
-                      { label: "Phone",             val: profile?.phone,                                                        done: !!profile?.phone },
-                      { label: "Zip Code",          val: profile?.zip_code,                                                     done: !!profile?.zip_code },
-                      { label: "Interests",         val: profile?.interests?.length > 0 ? profile.interests.join(", ") : null,  done: profile?.interests?.length > 0 },
-                      { label: "Availability",      val: profile?.availability?.length > 0
-                          ? profile.availability.map(id => AVAILABILITY_OPTIONS.find(o => o.id === id)?.label ?? id).join(", ")
-                          : null,                                                                                                done: profile?.availability?.length > 0 },
-                      { label: "Travel Distance",   val: profile?.distance ? `${profile.distance} mi` : null,                  done: !!profile?.distance },
-                      { label: "Parent / Guardian", val: profile?.parent_email,                                                 done: !!profile?.parent_email },
-                    ].map((f, i) => (
-                      <div key={i} className="dash-list-item">
-                        <div className="dash-list-left">
-                          <p className="dash-list-title">{f.label}</p>
-                          <p className="dash-list-sub">{f.val || "Not provided"}</p>
+                {!editing && (() => {
+                  // Compute age from DOB
+                  const age = (() => {
+                    if (!profile?.dob) return null;
+                    const t = new Date(), b = new Date(profile.dob);
+                    let a = t.getFullYear() - b.getFullYear();
+                    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+                    return a;
+                  })();
+
+                  const genderDisplay = profile?.gender === "custom" ? profile?.gender_custom : profile?.gender;
+                  const distanceLabel = DISTANCE_OPTIONS.find(o => o.id === profile?.distance);
+                  const experiences = profile?.experiences ?? [];
+
+                  const SectionTitle = ({ children }) => (
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#aaa", textTransform: "uppercase", letterSpacing: "0.8px", margin: "24px 0 10px" }}>{children}</p>
+                  );
+                  const Row = ({ label, value }) => value ? (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: "1px solid #f5f5f5", gap: 12 }}>
+                      <span style={{ fontSize: 13, color: "#999", flexShrink: 0, minWidth: 120 }}>{label}</span>
+                      <span style={{ fontSize: 14, color: "#1a1a2e", fontWeight: 500, textAlign: "right" }}>{value}</span>
+                    </div>
+                  ) : null;
+
+                  return (
+                    <div>
+                      {/* Hero card */}
+                      <div style={{ background: "linear-gradient(135deg, #FF6B35, #FFB347)", borderRadius: 16, padding: "24px 20px", display: "flex", alignItems: "center", gap: 16, marginBottom: 4 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+                          {initials}
                         </div>
-                        <span className={`dash-badge ${f.done ? "badge-green" : "badge-gray"}`}>
-                          {f.done ? "✓" : "Missing"}
-                        </span>
+                        <div>
+                          <p style={{ fontWeight: 800, fontSize: 18, color: "#fff", margin: "0 0 2px" }}>{fullName}</p>
+                          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", margin: 0 }}>
+                            {[age ? `Age ${age}` : null, genderDisplay, profile?.zip_code ? `📍 ${profile.zip_code}` : null].filter(Boolean).join(" · ") || "Job Seeker"}
+                          </p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      {/* Contact */}
+                      <SectionTitle>Contact</SectionTitle>
+                      <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "0 16px" }}>
+                        <Row label="Email"              value={profile?.email} />
+                        <Row label="Phone"              value={profile?.phone} />
+                        <Row label="Zip Code"           value={profile?.zip_code} />
+                        <Row label="Contact Preference" value={profile?.contact_preference} />
+                        <Row label="Parent / Guardian"  value={profile?.parent_email} />
+                      </div>
+
+                      {/* Availability & Distance */}
+                      <SectionTitle>Availability & Distance</SectionTitle>
+                      <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "14px 16px" }}>
+                        {profile?.availability?.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: distanceLabel ? 10 : 0 }}>
+                            {profile.availability.map(id => {
+                              const o = AVAILABILITY_OPTIONS.find(o => o.id === id);
+                              return o ? (
+                                <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", background: "rgba(255,107,53,0.08)", border: "1px solid rgba(255,107,53,0.2)", borderRadius: 50, fontSize: 13, color: "#FF6B35", fontWeight: 600 }}>
+                                  {o.icon} {o.label}
+                                </span>
+                              ) : null;
+                            })}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: 13, color: "#ccc", margin: "0 0 10px" }}>No availability set</p>
+                        )}
+                        {distanceLabel && (
+                          <p style={{ fontSize: 13, color: "#888", margin: 0 }}>
+                            {distanceLabel.icon} Will travel up to <strong>{distanceLabel.label}</strong> — {distanceLabel.desc}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Interests */}
+                      <SectionTitle>Interests</SectionTitle>
+                      <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "14px 16px" }}>
+                        {profile?.interests?.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                            {profile.interests.map(id => {
+                              const o = CATEGORY_OPTIONS.find(o => o.id === id);
+                              return (
+                                <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 12px", background: "#f5f5f5", border: "1px solid #e5e7eb", borderRadius: 50, fontSize: 13, color: "#555", fontWeight: 500 }}>
+                                  {o ? `${o.icon} ${o.label}` : `✨ ${id}`}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: 13, color: "#ccc", margin: 0 }}>No interests added</p>
+                        )}
+                      </div>
+
+                      {/* Experience */}
+                      <SectionTitle>Experience</SectionTitle>
+                      {experiences.length === 0 ? (
+                        <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "20px 16px", textAlign: "center" }}>
+                          <p style={{ fontSize: 13, color: "#ccc", margin: 0 }}>No experience entries added</p>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {experiences.map((exp, i) => (
+                            <div key={i} style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "14px 16px" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                                <p style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", margin: "0 0 4px" }}>{exp.title || "Untitled"}</p>
+                                {exp.dur && <span className="dash-badge badge-blue" style={{ flexShrink: 0 }}>{exp.dur}</span>}
+                              </div>
+                              {exp.desc && <p style={{ fontSize: 13, color: "#888", margin: 0, lineHeight: 1.5 }}>{exp.desc}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* ── Edit mode ── */}
                 {editing && (
