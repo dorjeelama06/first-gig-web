@@ -370,7 +370,18 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   <div style={{ textAlign: "center", padding: 48 }}>
                     <p style={{ fontSize: 36, margin: "0 0 10px" }}>👥</p>
                     <p style={{ color: "#bbb", fontWeight: 600, fontSize: 14 }}>No applicants yet</p>
-                    <p style={{ color: "#ccc", fontSize: 12, margin: "6px 0 0" }}>Applicants will appear here when teens apply to your jobs</p>
+                    <p style={{ color: "#ccc", fontSize: 12, margin: "6px 0 16px" }}>
+                      {employerJobs.length === 0
+                        ? "Post a job first — applicants will show up here once teens start applying"
+                        : "Your jobs are live! Applicants will appear here as teens apply"}
+                    </p>
+                    {employerJobs.length === 0 && (
+                      <button
+                        onClick={() => { setTab("jobs"); setPostJobOpen(true); }}
+                        style={{ padding: "10px 24px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                        + Post Your First Job
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <div className="dash-list">
@@ -437,6 +448,24 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   <div className="dash-convo-search">
                     <input placeholder="🔍  Search conversations..." />
                   </div>
+                  {/* Guidance banner for new employers */}
+                  {employerJobs.length === 0 && (
+                    <div style={{ margin: "12px 14px", padding: "12px 14px", background: "#fff8f5", border: "1px solid rgba(255,107,53,0.2)", borderRadius: 10 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#FF6B35", margin: "0 0 4px" }}>No conversations yet</p>
+                      <p style={{ fontSize: 12, color: "#888", margin: "0 0 10px", lineHeight: 1.5 }}>Post a job first — then message applicants from the Applicants tab to start a conversation.</p>
+                      <button
+                        onClick={() => { setTab("jobs"); setPostJobOpen(true); }}
+                        style={{ fontSize: 12, padding: "6px 14px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 7, fontWeight: 700, cursor: "pointer" }}>
+                        + Post a Job
+                      </button>
+                    </div>
+                  )}
+                  {employerJobs.length > 0 && applicants.length === 0 && (
+                    <div style={{ margin: "12px 14px", padding: "12px 14px", background: "#f8f9fa", border: "1px solid #eee", borderRadius: 10 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "#555", margin: "0 0 4px" }}>No conversations yet</p>
+                      <p style={{ fontSize: 12, color: "#aaa", margin: 0, lineHeight: 1.5 }}>Once teens apply, go to the Applicants tab and hit Message to start a conversation.</p>
+                    </div>
+                  )}
                   <div className="dash-convo-list">
                     <ConversationList
                       userId={user.id}
