@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { applyToJob, fetchAppliedJobIds } from "../lib/applications";
 import Navbar from "../components/shared/Navbar";
@@ -18,6 +18,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [appliedJobIds, setAppliedJobIds] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [jobDetailOpen, setJobDetailOpen] = useState(false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -82,8 +83,29 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
         onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
 
+      {/* Hero / marketing strip */}
+      <div className="gs-hero">
+        <div className="gs-hero-inner">
+          <div className="gs-hero-text">
+            <h1 className="gs-hero-title">Get hired for local gigs ⚡</h1>
+            <p className="gs-hero-sub">Babysitting, tutoring, lawn care &amp; more — find work or hire teens near you.</p>
+          </div>
+          <div className="gs-hero-ctas">
+            <button
+              className="gs-btn gs-btn-filled"
+              onClick={() => searchRef.current?.scrollIntoView({ behavior: "smooth" })}
+            >
+              Browse Jobs
+            </button>
+            <button className="gs-btn gs-btn-outline" onClick={onRegister}>
+              Post a Job
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Search + category filters */}
-      <div className="gs-home-search">
+      <div ref={searchRef} className="gs-home-search">
         {/* Search bar row — on mobile wraps input + Filter button */}
         <div className="gs-filter-bar">
           <input
