@@ -22,6 +22,7 @@ import SeekerReview from "./components/seeker/SeekerReview";
 
 import StepBusinessInfo from "./components/poster/StepBusinessInfo";
 import PosterReview from "./components/poster/PosterReview";
+import LegalModal from "./components/shared/LegalModal";
 
 export default function App() {
   // 'loading' | 'home' | 'login' | 'onboarding' | 'dashboard'
@@ -30,6 +31,8 @@ export default function App() {
   const [userRole, setUserRole] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [legalSection, setLegalSection] = useState(null);
 
   // Returns the role string so callers can use it immediately
   const fetchRole = async (userId) => {
@@ -128,6 +131,10 @@ export default function App() {
   /* ─── Submit: create account + save data ─── */
   const handleSubmit = async () => {
     setSubmitError("");
+    if (!termsAgreed) {
+      setSubmitError("You must agree to the Terms of Service and Privacy Policy to continue.");
+      return;
+    }
     setSubmitting(true);
 
     if (role === "seeker") {
@@ -283,6 +290,7 @@ export default function App() {
           {/* ── Onboarding flow ── */}
           {authView === "onboarding" && (
             <>
+              {legalSection && <LegalModal section={legalSection} onClose={() => setLegalSection(null)} />}
               <div className="gs-progress">
                 <div className="gs-pbar">
                   <div className="gs-pfill" style={{ width: `${progress}%` }} />
@@ -310,10 +318,20 @@ export default function App() {
                 )}
                 {currentStep === "distance" && <StepDistance v={seeker.distance} set={v => uS("distance", v)} />}
                 {currentStep === "contact" && <StepContact d={seeker} set={uS} />}
-                {currentStep === "seekerReview" && <SeekerReview d={seeker} age={age} />}
+                {currentStep === "seekerReview" && (
+                  <SeekerReview d={seeker} age={age}
+                    termsAgreed={termsAgreed} setTermsAgreed={setTermsAgreed}
+                    onShowTerms={() => setLegalSection("terms")}
+                    onShowPrivacy={() => setLegalSection("privacy")} />
+                )}
 
                 {currentStep === "businessInfo" && <StepBusinessInfo d={poster} set={uP} />}
-                {currentStep === "posterReview" && <PosterReview d={poster} />}
+                {currentStep === "posterReview" && (
+                  <PosterReview d={poster}
+                    termsAgreed={termsAgreed} setTermsAgreed={setTermsAgreed}
+                    onShowTerms={() => setLegalSection("terms")}
+                    onShowPrivacy={() => setLegalSection("privacy")} />
+                )}
               </div>
 
               {submitError && (

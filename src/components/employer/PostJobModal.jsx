@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { CSS_STYLES } from "../../styles/styles";
+import LegalModal from "../shared/LegalModal";
 import StepJobDetails from "../poster/StepJobDetails";
 import StepJobRequirements from "../poster/StepJobRequirements";
 import StepJobSchedulePay from "../poster/StepJobSchedulePay";
@@ -83,6 +84,8 @@ export default function PostJobModal({ userId, jobId, initialData, onClose, onSu
   const [job, setJob] = useState(initialData ? dbToForm(initialData) : INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [legalSection, setLegalSection] = useState(null);
 
   const currentStep = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -111,6 +114,7 @@ export default function PostJobModal({ userId, jobId, initialData, onClose, onSu
 
   const handleSubmit = async () => {
     if (!job.jobTitle.trim()) { setError("Job title is required."); return; }
+    if (!isEdit && !termsAgreed) { setError("You must agree to the Terms of Service to post a job."); return; }
     setError("");
     setSubmitting(true);
     try {
@@ -186,6 +190,23 @@ export default function PostJobModal({ userId, jobId, initialData, onClose, onSu
             <StepJobSchedulePay d={job} set={set} toggle={id => toggle("schedule", id)} />
           )}
           {currentStep === "jobLocation" && <StepJobLocation d={job} set={set} />}
+
+          {/* ToS checkbox — new postings only, shown on last step */}
+          {isLast && !isEdit && (
+            <div style={{ marginTop: 20, display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <input type="checkbox" id="job-tos" checked={termsAgreed}
+                onChange={e => setTermsAgreed(e.target.checked)}
+                style={{ marginTop: 3, accentColor: "#FF6B35", flexShrink: 0, width: 16, height: 16, cursor: "pointer" }} />
+              <label htmlFor="job-tos" style={{ fontSize: 13, color: "#555", lineHeight: 1.5, cursor: "pointer" }}>
+                I confirm this job posting is accurate and complies with the{" "}
+                <button type="button" onClick={() => setLegalSection("terms")}
+                  style={{ background: "none", border: "none", color: "#FF6B35", fontWeight: 600,
+                    fontSize: 13, cursor: "pointer", padding: 0, textDecoration: "underline", fontFamily: "inherit" }}>
+                  Terms of Service
+                </button>
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Error */}
@@ -214,13 +235,15 @@ export default function PostJobModal({ userId, jobId, initialData, onClose, onSu
           </button>
 
           {isLast ? (
-            <button onClick={handleSubmit} disabled={submitting} style={{
-              padding: "11px 28px",
-              background: submitting ? "#ccc" : "linear-gradient(135deg, #22C55E, #16A34A)",
-              border: "none", borderRadius: 10, color: "#fff",
-              fontSize: 15, fontWeight: 700,
-              cursor: submitting ? "not-allowed" : "pointer", fontFamily: "inherit",
-            }}>
+            <button onClick={handleSubmit}
+              disabled={submitting || (!isEdit && !termsAgreed)}
+              style={{
+                padding: "11px 28px",
+                background: (submitting || (!isEdit && !termsAgreed)) ? "#ccc" : "linear-gradient(135deg, #22C55E, #16A34A)",
+                border: "none", borderRadius: 10, color: "#fff",
+                fontSize: 15, fontWeight: 700,
+                cursor: (submitting || (!isEdit && !termsAgreed)) ? "not-allowed" : "pointer", fontFamily: "inherit",
+              }}>
               {submitting ? "Saving..." : isEdit ? "Save Changes ✓" : "Post Job ✨"}
             </button>
           ) : (
@@ -237,6 +260,8 @@ export default function PostJobModal({ userId, jobId, initialData, onClose, onSu
           )}
         </div>
       </div>
+
+      {legalSection && <LegalModal section={legalSection} onClose={() => setLegalSection(null)} />}
     </>
   );
 }

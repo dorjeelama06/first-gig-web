@@ -1,6 +1,6 @@
 import { Rev } from "../shared/Rev";
 
-export default function PosterReview({ d }) {
+export default function PosterReview({ d, termsAgreed, setTermsAgreed, onShowTerms, onShowPrivacy }) {
   return (
     <div>
       <h2 className="gs-title">Review your account</h2>
@@ -27,6 +27,23 @@ export default function PosterReview({ d }) {
       <p style={{ marginTop: 20, fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>
         You can post your first job from your dashboard after signing up.
       </p>
+
+      <div className="gs-tos-wrap">
+        <label className="gs-tos-label">
+          <input
+            type="checkbox"
+            className="gs-tos-check"
+            checked={termsAgreed}
+            onChange={e => setTermsAgreed(e.target.checked)}
+          />
+          <span>
+            I agree to the{" "}
+            <button type="button" className="gs-tos-link" onClick={onShowTerms}>Terms of Service</button>
+            {" "}and{" "}
+            <button type="button" className="gs-tos-link" onClick={onShowPrivacy}>Privacy Policy</button>
+          </span>
+        </label>
+      </div>
     </div>
   );
 }

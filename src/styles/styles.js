@@ -253,4 +253,42 @@ export const CSS_STYLES = `
   .gs-title { font-size: 17px; }
   .gs-chip { padding: 7px 10px; font-size: 12px; }
 }
+
+/* ── Terms of Service checkbox (onboarding dark theme) ── */
+.gs-tos-wrap {
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+}
+.gs-tos-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+  margin: 0;
+}
+.gs-tos-check {
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: #FF6B35;
+  cursor: pointer;
+}
+.gs-tos-link {
+  background: none;
+  border: none;
+  color: #FF6B35;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
 `;

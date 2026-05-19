@@ -1,7 +1,7 @@
 import { CATEGORY_OPTIONS, AVAILABILITY_OPTIONS, DISTANCE_OPTIONS } from "../../constants/options";
 import { Rev, RevTags } from "../shared/Rev";
 
-export default function SeekerReview({ d, age }) {
+export default function SeekerReview({ d, age, termsAgreed, setTermsAgreed, onShowTerms, onShowPrivacy }) {
   const gLabel = d.gender === "custom" ? d.genderCustom : d.gender === "prefer_not" ? "Prefer not to say"
     : d.gender ? d.gender.charAt(0).toUpperCase() + d.gender.slice(1) : "";
   const iLabels = d.interests.map(id => {
@@ -44,6 +44,23 @@ export default function SeekerReview({ d, age }) {
         } />
       )}
       {d.parentEmail && <Rev label="Parent / Guardian Email" val={d.parentEmail} />}
+
+      <div className="gs-tos-wrap">
+        <label className="gs-tos-label">
+          <input
+            type="checkbox"
+            className="gs-tos-check"
+            checked={termsAgreed}
+            onChange={e => setTermsAgreed(e.target.checked)}
+          />
+          <span>
+            I agree to the{" "}
+            <button type="button" className="gs-tos-link" onClick={onShowTerms}>Terms of Service</button>
+            {" "}and{" "}
+            <button type="button" className="gs-tos-link" onClick={onShowPrivacy}>Privacy Policy</button>
+          </span>
+        </label>
+      </div>
     </div>
   );
 }
