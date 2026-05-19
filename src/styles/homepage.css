@@ -186,15 +186,82 @@
   flex-shrink: 0;
 }
 
-/* ── Filter chips row (desktop: Category + Location chips) ── */
+/* ── Filter chips row (desktop: Category · Pay · Location) ── */
 .gs-filter-chips-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
+  padding: 4px 0 2px;
 }
 
-/* ── Category dropdown chip ── */
+/* ── Shared dropdown chip button ── */
+.gs-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.gs-dropdown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 24px;
+  border: 1.5px solid #d0d0d0;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #222;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+.gs-dropdown-chip:hover          { border-color: #999; background: #f9f9f9; }
+.gs-dropdown-chip.open           { border-color: #666; background: #f5f5f5; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+.gs-dropdown-chip.active         { background: #FF6B35; color: #fff; border-color: #FF6B35; box-shadow: 0 2px 8px rgba(255,107,53,0.3); }
+.gs-dropdown-chip.active:hover   { background: #e85d25; border-color: #e85d25; }
+
+/* CSS chevron arrow */
+.gs-chip-chevron {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.gs-chip-chevron.up {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+/* ── Pay dropdown ── */
+.gs-pay-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 20px 20px 16px;
+  width: 260px;
+  z-index: 200;
+}
+
+.gs-pay-dropdown-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gs-pay-dropdown-inputs .gs-adv-pay-wrap { flex: 1; width: auto; }
+
+.gs-pay-dash { color: #aaa; font-size: 16px; font-weight: 600; flex-shrink: 0; }
+
+/* ── Category dropdown chip (wrapper only, dropdown uses shared styles) ── */
 .gs-category-chip-wrap {
   position: relative;
   display: inline-block;
@@ -365,33 +432,7 @@
 }
 .gs-location-clear:hover { background: #e5e7eb; border-color: #ccc; color: #222; }
 
-/* ── Advanced filters row (desktop) ── */
-.gs-advanced-filters {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  padding: 10px 0 2px;
-  border-top: 1px solid #f0f0f0;
-  width: 100%;
-  flex-wrap: wrap;
-}
-
-.gs-adv-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.gs-adv-group--wide { flex: 1; min-width: 160px; }
-
-.gs-adv-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
+/* ── Pay input shared styles (used in pay dropdown + mobile sheet) ── */
 .gs-adv-pay-wrap {
   display: flex;
   align-items: center;
@@ -422,45 +463,16 @@
   padding: 7px 8px 7px 0;
   width: 100%;
 }
-/* hide number spinner arrows */
 .gs-adv-input::-webkit-outer-spin-button,
 .gs-adv-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .gs-adv-input[type=number] { -moz-appearance: textfield; }
 
-.gs-adv-input--location {
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fafafa;
-  padding: 7px 12px;
-  font-size: 13px;
-  width: 100%;
-  transition: border-color 0.15s;
-}
-.gs-adv-input--location:focus { border-color: #FF6B35; background: #fff; outline: none; }
-.gs-adv-input--full { display: block; width: 100%; }
-
-.gs-adv-clear {
-  background: none;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 12px;
-  font-family: inherit;
-  font-weight: 600;
-  color: #888;
-  padding: 6px 12px;
-  cursor: pointer;
-  align-self: flex-end;
-  transition: border-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-.gs-adv-clear:hover { border-color: #FF6B35; color: #FF6B35; }
-
 /* ── Two-column layout ── */
-/* hero ≈ 94px + adv-filters ≈ 54px → total header ≈ 276px */
+/* hero ≈ 94px + chips row ≈ 46px → total header ≈ 246px */
 .gs-home-body {
   display: grid;
   grid-template-columns: 400px 1fr;
-  height: calc(100vh - 276px);
+  height: calc(100vh - 246px);
 }
 
 /* ── Left: job list ── */
