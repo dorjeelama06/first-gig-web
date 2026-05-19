@@ -21,10 +21,6 @@ import StepContact from "./components/seeker/StepContact";
 import SeekerReview from "./components/seeker/SeekerReview";
 
 import StepBusinessInfo from "./components/poster/StepBusinessInfo";
-import StepJobDetails from "./components/poster/StepJobDetails";
-import StepJobRequirements from "./components/poster/StepJobRequirements";
-import StepJobSchedulePay from "./components/poster/StepJobSchedulePay";
-import StepJobLocation from "./components/poster/StepJobLocation";
 import PosterReview from "./components/poster/PosterReview";
 
 export default function App() {
@@ -80,11 +76,6 @@ export default function App() {
     companyName: "", contactName: "", contactEmail: "",
     contactPhone: "", companyZip: "",
     password: "", confirmPassword: "",
-    jobTitle: "", jobDesc: "", jobCategory: [], customCategory: "", positionsCount: "1",
-    minAge: "16", skills: "", dressCode: "", requirements: "",
-    payType: "hourly", payMin: "", payMax: "", hoursPerWeek: "",
-    schedule: [], startDate: "", endDate: "",
-    jobAddress: "", jobCity: "", jobState: "", jobZip: "", isRemote: false,
   });
 
   const steps = role === "poster" ? POSTER_STEPS : SEEKER_STEPS;
@@ -120,16 +111,6 @@ export default function App() {
 
   /* ─── Poster helpers ─── */
   const uP = (f, v) => setPoster(p => ({ ...p, [f]: v }));
-  const togglePosterArr = (f, item) => setPoster(p => ({
-    ...p, [f]: p[f].includes(item) ? p[f].filter(i => i !== item) : [...p[f], item],
-  }));
-  const addCustomCategory = () => {
-    const val = poster.customCategory.trim();
-    if (val && !poster.jobCategory.includes(val)) {
-      uP("jobCategory", [...poster.jobCategory, val]);
-      uP("customCategory", "");
-    }
-  };
 
   const age = (() => {
     if (!seeker.dob) return null;
@@ -192,22 +173,6 @@ export default function App() {
         company_name: poster.companyName, contact_name: poster.contactName,
         contact_email: poster.contactEmail, contact_phone: poster.contactPhone,
         company_zip: poster.companyZip,
-      });
-      await supabase.from("jobs").insert({
-        employer_id: userId,
-        job_title: poster.jobTitle, job_desc: poster.jobDesc,
-        job_category: poster.jobCategory,
-        positions_count: parseInt(poster.positionsCount) || 1,
-        min_age: poster.minAge, skills: poster.skills,
-        dress_code: poster.dressCode, requirements: poster.requirements,
-        pay_type: poster.payType,
-        pay_min: parseFloat(poster.payMin) || null,
-        pay_max: parseFloat(poster.payMax) || null,
-        hours_per_week: parseFloat(poster.hoursPerWeek) || null,
-        schedule: poster.schedule,
-        start_date: poster.startDate || null, end_date: poster.endDate || null,
-        job_address: poster.jobAddress, job_city: poster.jobCity,
-        job_state: poster.jobState, job_zip: poster.jobZip, is_remote: poster.isRemote,
       });
 
       setUser(data.user);
@@ -348,17 +313,6 @@ export default function App() {
                 {currentStep === "seekerReview" && <SeekerReview d={seeker} age={age} />}
 
                 {currentStep === "businessInfo" && <StepBusinessInfo d={poster} set={uP} />}
-                {currentStep === "jobDetails" && (
-                  <StepJobDetails d={poster} set={uP}
-                    toggle={id => togglePosterArr("jobCategory", id)}
-                    addCustom={addCustomCategory} />
-                )}
-                {currentStep === "jobRequirements" && <StepJobRequirements d={poster} set={uP} />}
-                {currentStep === "jobSchedulePay" && (
-                  <StepJobSchedulePay d={poster} set={uP}
-                    toggle={id => togglePosterArr("schedule", id)} />
-                )}
-                {currentStep === "jobLocation" && <StepJobLocation d={poster} set={uP} />}
                 {currentStep === "posterReview" && <PosterReview d={poster} />}
               </div>
 
@@ -376,7 +330,7 @@ export default function App() {
                 {(currentStep === "seekerReview" || currentStep === "posterReview") ? (
                   <button className={`gs-next submit ${submitting ? "disabled" : ""}`}
                     onClick={!submitting ? handleSubmit : undefined}>
-                    {submitting ? "Saving..." : role === "poster" ? "Post Job ✨" : "Submit ✨"}
+                    {submitting ? "Saving..." : "Create Account ✨"}
                   </button>
                 ) : (
                   <button className={`gs-next ${canProceed() ? "" : "disabled"}`}

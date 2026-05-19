@@ -4,6 +4,5 @@ export const SEEKER_STEPS = [
 ];
 
 export const POSTER_STEPS = [
-  "role", "businessInfo", "jobDetails", "jobRequirements",
-  "jobSchedulePay", "jobLocation", "posterReview",
+  "role", "businessInfo", "posterReview",
 ];
