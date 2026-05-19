@@ -4,6 +4,7 @@ import { applyToJob, fetchAppliedJobIds } from "../lib/applications";
 import Navbar from "../components/shared/Navbar";
 import JobCard from "../components/jobs/JobCard";
 import JobDetail from "../components/jobs/JobDetail";
+import LegalModal from "../components/shared/LegalModal";
 import { CATEGORY_OPTIONS } from "../constants/options";
 import "../styles/homepage.css";
 
@@ -18,6 +19,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [appliedJobIds, setAppliedJobIds] = useState([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [jobDetailOpen, setJobDetailOpen] = useState(false);
+  const [legalSection, setLegalSection] = useState(null); // "terms" | "privacy" | null
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -220,6 +222,20 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
             onClose={() => setJobDetailOpen(false)}
           />
         </div>
+      )}
+
+      {/* Footer */}
+      <footer className="gs-home-footer">
+        <span className="gs-footer-copy">© {new Date().getFullYear()} First Gig</span>
+        <span className="gs-footer-sep">·</span>
+        <button className="gs-footer-link" onClick={() => setLegalSection("terms")}>Terms of Service</button>
+        <span className="gs-footer-sep">·</span>
+        <button className="gs-footer-link" onClick={() => setLegalSection("privacy")}>Privacy Policy</button>
+      </footer>
+
+      {/* Legal modal overlay */}
+      {legalSection && (
+        <LegalModal section={legalSection} onClose={() => setLegalSection(null)} />
       )}
     </div>
   );
