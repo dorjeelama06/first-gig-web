@@ -90,7 +90,7 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
             const showDay = i === 0 || formatDay(messages[i - 1].created_at) !== formatDay(m.created_at);
             const isMine = m.sender_id === userId;
             return (
-              <div key={m.id}>
+              <div key={m.id} className="dash-msg-wrapper">
                 {showDay && <div className="dash-date-divider">{formatDay(m.created_at)}</div>}
                 <div className={`dash-msg ${isMine ? "sent" : "received"}`}>
                   <div className="dash-msg-bubble">{m.content}</div>

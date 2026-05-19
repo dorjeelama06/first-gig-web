@@ -295,6 +295,9 @@
   margin: 4px 0;
 }
 
+/* Wrapper makes each message group a flex column so align-self works on .dash-msg */
+.dash-msg-wrapper  { display: flex; flex-direction: column; }
+
 .dash-msg { display: flex; flex-direction: column; max-width: 65%; }
 .dash-msg.sent     { align-self: flex-end; align-items: flex-end; }
 .dash-msg.received { align-self: flex-start; align-items: flex-start; }
