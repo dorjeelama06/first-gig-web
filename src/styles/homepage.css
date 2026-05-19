@@ -186,12 +186,102 @@
   flex-shrink: 0;
 }
 
+/* ── Advanced filters row (desktop) ── */
+.gs-advanced-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 10px 0 2px;
+  border-top: 1px solid #f0f0f0;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.gs-adv-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gs-adv-group--wide { flex: 1; min-width: 160px; }
+
+.gs-adv-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gs-adv-pay-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  width: 90px;
+}
+.gs-adv-pay-wrap:focus-within { border-color: #FF6B35; background: #fff; }
+
+.gs-adv-dollar {
+  padding: 0 6px 0 10px;
+  font-size: 13px;
+  color: #888;
+  font-weight: 600;
+  user-select: none;
+}
+
+.gs-adv-input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: transparent;
+  padding: 7px 8px 7px 0;
+  width: 100%;
+}
+/* hide number spinner arrows */
+.gs-adv-input::-webkit-outer-spin-button,
+.gs-adv-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.gs-adv-input[type=number] { -moz-appearance: textfield; }
+
+.gs-adv-input--location {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 7px 12px;
+  font-size: 13px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.gs-adv-input--location:focus { border-color: #FF6B35; background: #fff; outline: none; }
+.gs-adv-input--full { display: block; width: 100%; }
+
+.gs-adv-clear {
+  background: none;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #888;
+  padding: 6px 12px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.gs-adv-clear:hover { border-color: #FF6B35; color: #FF6B35; }
+
 /* ── Two-column layout ── */
-/* hero ≈ 94px (padding 40 + title 29 + gap 4 + sub 21) → total header ≈ 222px */
+/* hero ≈ 94px + adv-filters ≈ 54px → total header ≈ 276px */
 .gs-home-body {
   display: grid;
   grid-template-columns: 400px 1fr;
-  height: calc(100vh - 222px);
+  height: calc(100vh - 276px);
 }
 
 /* ── Left: job list ── */
@@ -585,7 +675,47 @@
     font-family: inherit;
     cursor: pointer;
   }
-  .gs-filter-sheet-chips { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px 24px; }
+  .gs-filter-sheet-chips { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 20px 16px; }
+
+  .gs-filter-sheet-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #bbb;
+    padding: 0 20px 6px;
+  }
+
+  .gs-filter-sheet-section { padding: 12px 0 4px; }
+
+  .gs-filter-sheet-pay-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+  }
+  .gs-filter-sheet-pay-row .gs-adv-pay-wrap { flex: 1; width: auto; }
+  .gs-filter-sheet-pay-dash { color: #aaa; font-size: 16px; font-weight: 600; flex-shrink: 0; }
+
+  .gs-filter-sheet-section .gs-adv-input--location { margin: 0 20px; width: calc(100% - 40px); }
+
+  .gs-filter-sheet-clear {
+    width: 100%;
+    background: none;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #888;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .gs-filter-sheet-clear:hover { border-color: #FF6B35; color: #FF6B35; }
+
+  /* Hide desktop advanced filters on mobile */
+  .gs-advanced-filters { display: none; }
 
   /* Fix 3: Hide desktop right panel; use overlay */
   .gs-jobs-right--desktop { display: none; }

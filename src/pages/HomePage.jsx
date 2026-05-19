@@ -20,6 +20,9 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [filterOpen, setFilterOpen] = useState(false);
   const [jobDetailOpen, setJobDetailOpen] = useState(false);
   const [legalSection, setLegalSection] = useState(null); // "terms" | "privacy" | null
+  const [payMin, setPayMin] = useState("");
+  const [payMax, setPayMax] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -47,13 +50,36 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   }, [user]);
 
   const filtered = jobs.filter(job => {
+    // text search
     const q = search.toLowerCase();
     const matchSearch = !q
       || job.job_title?.toLowerCase().includes(q)
       || job.employers?.company_name?.toLowerCase().includes(q)
       || (job.job_category || []).some(c => c.toLowerCase().includes(q));
+
+    // category chip
     const matchCat = activeCategory === ALL || (job.job_category || []).includes(activeCategory);
-    return matchSearch && matchCat;
+
+    // pay range — negotiable / unspecified always pass; otherwise compare pay_min
+    const minF = payMin !== "" ? parseFloat(payMin) : null;
+    const maxF = payMax !== "" ? parseFloat(payMax) : null;
+    const jobPay = job.pay_min != null ? parseFloat(job.pay_min) : null;
+    const matchPay = (minF === null && maxF === null)
+      || job.pay_type === "negotiable"
+      || jobPay === null
+      || (minF !== null && maxF !== null ? jobPay >= minF && jobPay <= maxF
+        : minF !== null ? jobPay >= minF
+        : jobPay <= maxF);
+
+    // location — remote always passes; match city, state or zip
+    const loc = locationQuery.trim().toLowerCase();
+    const matchLocation = !loc
+      || job.is_remote
+      || job.job_city?.toLowerCase().includes(loc)
+      || job.job_state?.toLowerCase().includes(loc)
+      || job.job_zip?.toLowerCase().includes(loc);
+
+    return matchSearch && matchCat && matchPay && matchLocation;
   });
 
   const handleApply = async (job) => {
@@ -73,6 +99,10 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const activeCategoryLabel = activeCategory !== ALL
     ? CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label ?? ""
     : null;
+
+  const advFilterCount = [payMin, payMax, locationQuery].filter(Boolean).length;
+  const hasAnyFilter = activeCategory !== ALL || advFilterCount > 0;
+  const clearAdvanced = () => { setPayMin(""); setPayMax(""); setLocationQuery(""); };
 
   return (
     <div className="gs-home-wrap">
@@ -118,10 +148,10 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
           />
           {/* Mobile-only filter trigger */}
           <button
-            className={`gs-filter-btn${activeCategory !== ALL ? " has-filter" : ""}`}
+            className={`gs-filter-btn${hasAnyFilter ? " has-filter" : ""}`}
             onClick={() => setFilterOpen(true)}
           >
-            {activeCategoryLabel ? `${activeCategoryLabel}` : "Filter"}
+            {hasAnyFilter ? `Filters${advFilterCount + (activeCategory !== ALL ? 1 : 0) > 1 ? ` (${advFilterCount + (activeCategory !== ALL ? 1 : 0)})` : activeCategoryLabel ? `: ${activeCategoryLabel}` : ""}` : "Filter"}
           </button>
         </div>
 
@@ -142,6 +172,46 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
           ))}
         </div>
 
+        {/* Desktop advanced filters row */}
+        <div className="gs-advanced-filters">
+          <div className="gs-adv-group">
+            <label className="gs-adv-label">Min Pay</label>
+            <div className="gs-adv-pay-wrap">
+              <span className="gs-adv-dollar">$</span>
+              <input
+                className="gs-adv-input"
+                type="number" min="0" placeholder="0"
+                value={payMin}
+                onChange={e => setPayMin(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="gs-adv-group">
+            <label className="gs-adv-label">Max Pay</label>
+            <div className="gs-adv-pay-wrap">
+              <span className="gs-adv-dollar">$</span>
+              <input
+                className="gs-adv-input"
+                type="number" min="0" placeholder="Any"
+                value={payMax}
+                onChange={e => setPayMax(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="gs-adv-group gs-adv-group--wide">
+            <label className="gs-adv-label">Location</label>
+            <input
+              className="gs-adv-input gs-adv-input--location"
+              type="text" placeholder="City or zip code..."
+              value={locationQuery}
+              onChange={e => setLocationQuery(e.target.value)}
+            />
+          </div>
+          {(payMin || payMax || locationQuery) && (
+            <button className="gs-adv-clear" onClick={clearAdvanced}>✕ Clear</button>
+          )}
+        </div>
+
         {/* Mobile filter bottom sheet */}
         {filterOpen && (
           <>
@@ -151,6 +221,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
                 <span className="gs-filter-sheet-title">Filter by Category</span>
                 <button className="gs-filter-sheet-done" onClick={() => setFilterOpen(false)}>Done</button>
               </div>
+              <div className="gs-filter-sheet-section-title">Category</div>
               <div className="gs-filter-sheet-chips">
                 <button
                   className={`gs-filter-chip ${activeCategory === ALL ? "active" : ""}`}
@@ -166,6 +237,51 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
                   </button>
                 ))}
               </div>
+
+              {/* Pay range */}
+              <div className="gs-filter-sheet-section">
+                <div className="gs-filter-sheet-section-title">Pay Range ($/hr)</div>
+                <div className="gs-filter-sheet-pay-row">
+                  <div className="gs-adv-pay-wrap">
+                    <span className="gs-adv-dollar">$</span>
+                    <input
+                      className="gs-adv-input"
+                      type="number" min="0" placeholder="Min"
+                      value={payMin}
+                      onChange={e => setPayMin(e.target.value)}
+                    />
+                  </div>
+                  <span className="gs-filter-sheet-pay-dash">–</span>
+                  <div className="gs-adv-pay-wrap">
+                    <span className="gs-adv-dollar">$</span>
+                    <input
+                      className="gs-adv-input"
+                      type="number" min="0" placeholder="Max"
+                      value={payMax}
+                      onChange={e => setPayMax(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="gs-filter-sheet-section">
+                <div className="gs-filter-sheet-section-title">Location</div>
+                <input
+                  className="gs-adv-input gs-adv-input--location gs-adv-input--full"
+                  type="text" placeholder="City or zip code..."
+                  value={locationQuery}
+                  onChange={e => setLocationQuery(e.target.value)}
+                />
+              </div>
+
+              {(payMin || payMax || locationQuery) && (
+                <div style={{ padding: "0 20px 8px" }}>
+                  <button className="gs-filter-sheet-clear" onClick={() => { clearAdvanced(); }}>
+                    ✕ Clear pay &amp; location filters
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
