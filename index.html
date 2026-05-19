@@ -3,12 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#1A1A2E" />
+    <meta name="theme-color" content="#FF6B35" />
     <title>First Gig — Find Gigs Near You</title>
-    <script type="module" crossorigin src="/gig-app/assets/index-D6nn8n9t.js"></script>
-    <link rel="stylesheet" crossorigin href="/gig-app/assets/index-B3fPaoI4.css">
+    <link rel="manifest" href="/gig-app/manifest.json" />
+    <link rel="apple-touch-icon" href="/gig-app/icon.svg" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="First Gig" />
+    <script type="module" crossorigin src="/gig-app/assets/index-CMX376pg.js"></script>
+    <link rel="stylesheet" crossorigin href="/gig-app/assets/index-3xgvvPX4.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/gig-app/sw.js', { scope: '/gig-app/' })
+            .catch(err => console.warn('SW registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>
