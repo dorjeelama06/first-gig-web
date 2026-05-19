@@ -23,7 +23,10 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [payMin, setPayMin] = useState("");
   const [payMax, setPayMax] = useState("");
   const [locationQuery, setLocationQuery] = useState("");
+  const [locationRadius, setLocationRadius] = useState(50);
+  const [locationOpen, setLocationOpen] = useState(false);
   const searchRef = useRef(null);
+  const locationRef = useRef(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -48,6 +51,17 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
       fetchAppliedJobIds(user.id).then(setAppliedJobIds);
     }
   }, [user]);
+
+  // Close location dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (locationRef.current && !locationRef.current.contains(e.target)) {
+        setLocationOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const filtered = jobs.filter(job => {
     // text search
@@ -102,7 +116,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
 
   const advFilterCount = [payMin, payMax, locationQuery].filter(Boolean).length;
   const hasAnyFilter = activeCategory !== ALL || advFilterCount > 0;
-  const clearAdvanced = () => { setPayMin(""); setPayMax(""); setLocationQuery(""); };
+  const clearAdvanced = () => { setPayMin(""); setPayMax(""); setLocationQuery(""); setLocationRadius(50); };
 
   return (
     <div className="gs-home-wrap">
@@ -170,9 +184,59 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
               {o.icon} {o.label}
             </button>
           ))}
+
+          {/* Location chip with dropdown */}
+          <div className="gs-location-chip-wrap" ref={locationRef}>
+            <button
+              className={`gs-filter-chip gs-location-chip-btn${locationQuery ? " active" : locationOpen ? " open" : ""}`}
+              onClick={() => setLocationOpen(o => !o)}
+            >
+              📍 Location {locationOpen ? "∧" : "∨"}
+            </button>
+            {locationOpen && (
+              <div className="gs-location-dropdown">
+                <p className="gs-location-dropdown-title">Location</p>
+                <div className="gs-location-search-wrap">
+                  <input
+                    className="gs-location-search-input"
+                    type="text"
+                    placeholder="Search by city, state, or zip code"
+                    value={locationQuery}
+                    onChange={e => setLocationQuery(e.target.value)}
+                    autoFocus
+                  />
+                  <span className="gs-location-search-icon">🔍</span>
+                </div>
+                <p className="gs-location-radius-label">
+                  Search radius for locations: <strong>{locationRadius} miles</strong>
+                </p>
+                <input
+                  className="gs-location-slider"
+                  type="range" min="1" max="100"
+                  value={locationRadius}
+                  onChange={e => setLocationRadius(parseInt(e.target.value))}
+                  style={{ background: `linear-gradient(to right, #1a1a2e 0%, #1a1a2e ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 100%)` }}
+                />
+                <div className="gs-location-slider-labels">
+                  <span>1 mile</span>
+                  <span>100 miles</span>
+                </div>
+                <div className="gs-location-dropdown-footer">
+                  {(locationQuery || locationRadius !== 50) && (
+                    <button
+                      className="gs-location-clear"
+                      onClick={() => { setLocationQuery(""); setLocationRadius(50); }}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Desktop advanced filters row */}
+        {/* Desktop advanced filters row — pay range only */}
         <div className="gs-advanced-filters">
           <div className="gs-adv-group">
             <label className="gs-adv-label">Min Pay</label>
@@ -198,17 +262,8 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
               />
             </div>
           </div>
-          <div className="gs-adv-group gs-adv-group--wide">
-            <label className="gs-adv-label">Location</label>
-            <input
-              className="gs-adv-input gs-adv-input--location"
-              type="text" placeholder="City or zip code..."
-              value={locationQuery}
-              onChange={e => setLocationQuery(e.target.value)}
-            />
-          </div>
-          {(payMin || payMax || locationQuery) && (
-            <button className="gs-adv-clear" onClick={clearAdvanced}>✕ Clear</button>
+          {(payMin || payMax) && (
+            <button className="gs-adv-clear" onClick={() => { setPayMin(""); setPayMax(""); }}>✕ Clear</button>
           )}
         </div>
 
@@ -267,17 +322,36 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
               {/* Location */}
               <div className="gs-filter-sheet-section">
                 <div className="gs-filter-sheet-section-title">Location</div>
-                <input
-                  className="gs-adv-input gs-adv-input--location gs-adv-input--full"
-                  type="text" placeholder="City or zip code..."
-                  value={locationQuery}
-                  onChange={e => setLocationQuery(e.target.value)}
-                />
+                <div className="gs-filter-sheet-location-body">
+                  <div className="gs-location-search-wrap">
+                    <input
+                      className="gs-location-search-input"
+                      type="text" placeholder="Search by city, state, or zip code"
+                      value={locationQuery}
+                      onChange={e => setLocationQuery(e.target.value)}
+                    />
+                    <span className="gs-location-search-icon">🔍</span>
+                  </div>
+                  <p className="gs-location-radius-label" style={{ margin: "14px 0 8px" }}>
+                    Search radius for locations: <strong>{locationRadius} miles</strong>
+                  </p>
+                  <input
+                    className="gs-location-slider"
+                    type="range" min="1" max="100"
+                    value={locationRadius}
+                    onChange={e => setLocationRadius(parseInt(e.target.value))}
+                    style={{ background: `linear-gradient(to right, #1a1a2e 0%, #1a1a2e ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 100%)` }}
+                  />
+                  <div className="gs-location-slider-labels">
+                    <span>1 mile</span>
+                    <span>100 miles</span>
+                  </div>
+                </div>
               </div>
 
-              {(payMin || payMax || locationQuery) && (
+              {(payMin || payMax || locationQuery || locationRadius !== 50) && (
                 <div style={{ padding: "0 20px 8px" }}>
-                  <button className="gs-filter-sheet-clear" onClick={() => { clearAdvanced(); }}>
+                  <button className="gs-filter-sheet-clear" onClick={clearAdvanced}>
                     ✕ Clear pay &amp; location filters
                   </button>
                 </div>

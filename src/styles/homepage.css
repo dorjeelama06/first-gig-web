@@ -186,6 +186,134 @@
   flex-shrink: 0;
 }
 
+/* ── Location chip + dropdown ── */
+.gs-location-chip-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.gs-location-chip-btn.open {
+  border-color: #999;
+  color: #333;
+  background: #f5f5f5;
+}
+
+.gs-location-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 20px 20px 16px;
+  width: 320px;
+  z-index: 200;
+}
+
+.gs-location-dropdown-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+}
+
+.gs-location-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gs-location-search-input {
+  width: 100%;
+  padding: 9px 36px 9px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.gs-location-search-input:focus { border-color: #FF6B35; background: #fff; }
+.gs-location-search-input::placeholder { color: #aaa; }
+
+.gs-location-search-icon {
+  position: absolute;
+  right: 10px;
+  font-size: 14px;
+  color: #bbb;
+  pointer-events: none;
+}
+
+.gs-location-radius-label {
+  font-size: 13px;
+  color: #333;
+  margin: 14px 0 10px;
+  line-height: 1.4;
+}
+
+/* Range slider */
+.gs-location-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.gs-location-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.25);
+}
+.gs-location-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.25);
+}
+
+.gs-location-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 6px;
+}
+
+.gs-location-dropdown-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  min-height: 30px;
+}
+
+.gs-location-clear {
+  background: #f3f4f6;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #555;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.gs-location-clear:hover { background: #e5e7eb; border-color: #ccc; color: #222; }
+
 /* ── Advanced filters row (desktop) ── */
 .gs-advanced-filters {
   display: flex;
@@ -697,7 +825,9 @@
   .gs-filter-sheet-pay-row .gs-adv-pay-wrap { flex: 1; width: auto; }
   .gs-filter-sheet-pay-dash { color: #aaa; font-size: 16px; font-weight: 600; flex-shrink: 0; }
 
-  .gs-filter-sheet-section .gs-adv-input--location { margin: 0 20px; width: calc(100% - 40px); }
+  .gs-filter-sheet-location-body { padding: 0 20px; }
+  .gs-filter-sheet-location-body .gs-location-search-input { font-size: 14px; }
+  .gs-filter-sheet-location-body .gs-location-slider { width: 100%; }
 
   .gs-filter-sheet-clear {
     width: 100%;
