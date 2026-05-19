@@ -15,7 +15,7 @@ const FIELD = { marginBottom: 14 };
 
 const STATUS_LABELS = {
   pending:  { label: "New",      cls: "badge-orange" },
-  reviewed: { label: "Reviewed", cls: "badge-blue"   },
+  reviewed: { label: "Under Review", cls: "badge-blue"   },
   accepted: { label: "Accepted", cls: "badge-green"  },
   rejected: { label: "Declined", cls: "badge-gray"   },
 };
@@ -416,7 +416,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                               style={{ fontSize: 12, padding: "4px 8px", border: "1.5px solid #eee", borderRadius: 8, background: "#fff", cursor: "pointer", color: "#555", fontWeight: 600 }}
                             >
                               <option value="pending">New</option>
-                              <option value="reviewed">Reviewed</option>
+                              <option value="reviewed">Under Review</option>
                               <option value="accepted">Accepted</option>
                               <option value="rejected">Declined</option>
                             </select>
