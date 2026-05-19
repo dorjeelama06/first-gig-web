@@ -25,8 +25,10 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [locationQuery, setLocationQuery] = useState("");
   const [locationRadius, setLocationRadius] = useState(50);
   const [locationOpen, setLocationOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
   const searchRef = useRef(null);
   const locationRef = useRef(null);
+  const categoryRef = useRef(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -52,12 +54,11 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     }
   }, [user]);
 
-  // Close location dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (locationRef.current && !locationRef.current.contains(e.target)) {
-        setLocationOpen(false);
-      }
+      if (locationRef.current && !locationRef.current.contains(e.target)) setLocationOpen(false);
+      if (categoryRef.current && !categoryRef.current.contains(e.target)) setCategoryOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -169,27 +170,45 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
           </button>
         </div>
 
-        {/* Desktop chips row */}
-        <div className="gs-filter-chips">
-          <button
-            className={`gs-filter-chip ${activeCategory === ALL ? "active" : ""}`}
-            onClick={() => setActiveCategory(ALL)}>
-            All Jobs
-          </button>
-          {CATEGORY_OPTIONS.map(o => (
+        {/* Desktop filter chips row — Category + Location dropdowns */}
+        <div className="gs-filter-chips-row">
+
+          {/* Category dropdown chip */}
+          <div className="gs-category-chip-wrap" ref={categoryRef}>
             <button
-              key={o.id}
-              className={`gs-filter-chip ${activeCategory === o.id ? "active" : ""}`}
-              onClick={() => setActiveCategory(o.id)}>
-              {o.icon} {o.label}
+              className={`gs-filter-chip${activeCategory !== ALL ? " active" : categoryOpen ? " open" : ""}`}
+              onClick={() => { setCategoryOpen(o => !o); setLocationOpen(false); }}
+            >
+              {activeCategory !== ALL
+                ? `${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.icon} ${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label}`
+                : "Category"} {categoryOpen ? "∧" : "∨"}
             </button>
-          ))}
+            {categoryOpen && (
+              <div className="gs-category-dropdown">
+                <button
+                  className={`gs-cat-option${activeCategory === ALL ? " active" : ""}`}
+                  onClick={() => { setActiveCategory(ALL); setCategoryOpen(false); }}
+                >
+                  All Jobs
+                </button>
+                {CATEGORY_OPTIONS.map(o => (
+                  <button
+                    key={o.id}
+                    className={`gs-cat-option${activeCategory === o.id ? " active" : ""}`}
+                    onClick={() => { setActiveCategory(o.id); setCategoryOpen(false); }}
+                  >
+                    {o.icon} {o.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Location chip with dropdown */}
           <div className="gs-location-chip-wrap" ref={locationRef}>
             <button
               className={`gs-filter-chip gs-location-chip-btn${locationQuery ? " active" : locationOpen ? " open" : ""}`}
-              onClick={() => setLocationOpen(o => !o)}
+              onClick={() => { setLocationOpen(o => !o); setCategoryOpen(false); }}
             >
               📍 Location {locationOpen ? "∧" : "∨"}
             </button>

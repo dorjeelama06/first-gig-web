@@ -186,6 +186,57 @@
   flex-shrink: 0;
 }
 
+/* ── Filter chips row (desktop: Category + Location chips) ── */
+.gs-filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* ── Category dropdown chip ── */
+.gs-category-chip-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.gs-category-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 14px 16px 16px;
+  width: 380px;
+  z-index: 200;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gs-cat-option {
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.gs-cat-option:hover { border-color: #FF6B35; color: #FF6B35; background: rgba(255,107,53,0.04); }
+.gs-cat-option.active {
+  background: #FF6B35;
+  color: #fff;
+  border-color: #FF6B35;
+  box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+}
+
 /* ── Location chip + dropdown ── */
 .gs-location-chip-wrap {
   position: relative;
@@ -734,8 +785,9 @@
   .gs-search-input { width: 100%; }
   .gs-job-detail  { padding: 24px 20px; }
 
-  /* Fix 2: Hide desktop chips, show Filter button */
-  .gs-filter-chips { display: none; }
+  /* Hide desktop filter row; mobile uses bottom sheet */
+  .gs-filter-chips-row { display: none; }
+  .gs-filter-chips     { display: none; }
 
   .gs-filter-btn {
     display: inline-flex;
