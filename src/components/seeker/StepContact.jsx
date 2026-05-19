@@ -8,10 +8,10 @@ export default function StepContact({ d, set }) {
         <select className="gs-input" value={d.contactPreference}
           onChange={e => set("contactPreference", e.target.value)}
           style={{ appearance: "none", WebkitAppearance: "none", cursor: "pointer" }}>
-          <option value="" style={{ background: "#1A1A2E" }}>Select a method...</option>
-          <option value="email" style={{ background: "#1A1A2E" }}>Email</option>
-          <option value="phone" style={{ background: "#1A1A2E" }}>Phone/Text</option>
-          <option value="either" style={{ background: "#1A1A2E" }}>Either</option>
+          <option value="" style={{ background: "#fff", color: "#1A1A2E" }}>Select a method...</option>
+          <option value="email" style={{ background: "#fff", color: "#1A1A2E" }}>Email</option>
+          <option value="phone" style={{ background: "#fff", color: "#1A1A2E" }}>Phone/Text</option>
+          <option value="either" style={{ background: "#fff", color: "#1A1A2E" }}>Either</option>
         </select>
       </div>
       <div className="gs-field">
