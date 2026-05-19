@@ -201,7 +201,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                 <div className="dash-stats">
                   <div className="dash-stat-card">
                     <div className="dash-stat-icon">📋</div>
-                    <p className="dash-stat-val">{employerJobs.length}</p>
+                    <p className="dash-stat-val">{employerJobs.filter(j => !j.is_closed).length}</p>
                     <p className="dash-stat-label">Active Jobs</p>
                   </div>
                   <div className="dash-stat-card">
@@ -238,7 +238,9 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                         <p className="dash-list-title">{j.job_title}</p>
                         <p className="dash-list-sub">{j.positions_count} opening{j.positions_count !== 1 ? "s" : ""} · Posted {new Date(j.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                       </div>
-                      <span className="dash-badge badge-green">Active</span>
+                      <span className={`dash-badge ${j.is_closed ? "badge-gray" : "badge-green"}`}>
+                        {j.is_closed ? "Filled" : "Active"}
+                      </span>
                     </div>
                   ))}
                 </div>
