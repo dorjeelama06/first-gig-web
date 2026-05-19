@@ -189,18 +189,36 @@
 .gs-home-search {
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
-  padding: 14px 32px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.055);
-  position: relative;
+  position: sticky;
+  top: 64px;
   z-index: 10;
 }
 
+/* Two-column header grid — aligns with body grid */
+.gs-home-search-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  align-items: center;
+}
+
+.gs-home-search-left {
+  padding: 12px 16px 12px 20px;
+  border-right: 1px solid #e5e7eb;
+}
+
+.gs-home-search-right {
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .gs-search-input {
-  width: 340px;
+  width: 100%;
   padding: 10px 16px;
   border: 1.5px solid #e0e0e0;
   border-radius: 10px;
@@ -289,13 +307,8 @@
 }
 
 /* ── Filter chips row (desktop: Category · Pay · Location) ── */
-.gs-filter-chips-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 4px 0 2px;
-}
+/* .gs-filter-chips-row is no longer used on desktop — chips are in gs-home-search-right */
+.gs-filter-chips-row { display: none; }
 
 /* ── Shared dropdown chip button ── */
 .gs-dropdown-wrap {
@@ -571,10 +584,13 @@
 
 /* ── Two-column layout ── */
 /* hero ≈ 94px + chips row ≈ 46px → total header ≈ 246px */
+/* navbar 64px + header row ~64px = 128px */
 .gs-home-body {
   display: grid;
   grid-template-columns: 400px 1fr;
-  height: calc(100vh - 246px);
+  height: calc(100vh - 128px);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* ── Left: job list ── */
@@ -872,7 +888,7 @@
 .gs-jobs-right::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
 
 /* ── Filter bar + mobile elements (base: desktop defaults) ── */
-.gs-filter-bar            { display: flex; align-items: center; gap: 10px; width: 100%; }
+.gs-filter-bar            { display: flex; align-items: center; gap: 8px; width: 100%; }
 .gs-filter-btn            { display: none; }
 .gs-filter-sheet-backdrop { display: none; }
 .gs-filter-sheet          { display: none; }
@@ -895,12 +911,14 @@
   .gs-jobs-right  { min-height: unset; }
   .gs-navbar      { padding: 0 16px; }
   .gs-navbar-logo { font-size: 18px; }
-  .gs-home-search { padding: 12px 16px; }
-  .gs-search-input { width: 100%; }
-  .gs-job-detail  { padding: 24px 20px; }
+  .gs-home-search          { position: relative; top: auto; }
+  .gs-home-search-inner    { grid-template-columns: 1fr; }
+  .gs-home-search-left     { border-right: none; padding: 10px 16px; }
+  .gs-home-search-right    { display: none; }  /* hidden on mobile — use bottom sheet */
+  .gs-search-input         { width: 100%; }
+  .gs-job-detail           { padding: 24px 20px; }
 
-  /* Hide desktop filter row; mobile uses bottom sheet */
-  .gs-filter-chips-row { display: none; }
+  /* Mobile uses bottom sheet for filters */
   .gs-filter-chips     { display: none; }
 
   .gs-filter-btn {

@@ -27,7 +27,6 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [locationOpen, setLocationOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
-  const searchRef = useRef(null);
   const locationRef = useRef(null);
   const categoryRef = useRef(null);
   const payRef = useRef(null);
@@ -139,149 +138,134 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
         onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
 
-      {/* Hero / marketing strip */}
-      <div className="gs-hero">
-        <div className="gs-hero-inner">
-          <div className="gs-hero-text">
-            <h1 className="gs-hero-title">Get hired for local gigs ⚡</h1>
-            <p className="gs-hero-sub">Babysitting, tutoring, lawn care &amp; more — find work or hire teens near you.</p>
-          </div>
-          <div className="gs-hero-ctas">
-            <button
-              className="gs-btn gs-btn-filled"
-              onClick={() => searchRef.current?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Browse Jobs
-            </button>
-            <button className="gs-btn gs-btn-outline" onClick={onRegister}>
-              Post a Job
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Handshake-style header: search left · filter chips right */}
+      <div className="gs-home-search">
+        <div className="gs-home-search-inner">
 
-      {/* Search + category filters */}
-      <div ref={searchRef} className="gs-home-search">
-        {/* Search bar row — on mobile wraps input + Filter button */}
-        <div className="gs-filter-bar">
-          <input
-            className="gs-search-input"
-            placeholder="🔍  Search by job title, company, or category..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          {/* Mobile-only filter trigger */}
-          <button
-            className={`gs-filter-btn${hasAnyFilter ? " has-filter" : ""}`}
-            onClick={() => setFilterOpen(true)}
-          >
-            {hasAnyFilter ? `Filters${advFilterCount + (activeCategory !== ALL ? 1 : 0) > 1 ? ` (${advFilterCount + (activeCategory !== ALL ? 1 : 0)})` : activeCategoryLabel ? `: ${activeCategoryLabel}` : ""}` : "Filter"}
-          </button>
-        </div>
-
-        {/* Desktop filter chips row — Category · Pay · Location */}
-        <div className="gs-filter-chips-row">
-
-          {/* ── Category ── */}
-          <div className="gs-dropdown-wrap" ref={categoryRef}>
-            <button
-              className={`gs-dropdown-chip${activeCategory !== ALL ? " active" : categoryOpen ? " open" : ""}`}
-              onClick={() => { setCategoryOpen(o => !o); setLocationOpen(false); setPayOpen(false); }}
-            >
-              {activeCategory !== ALL
-                ? `${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.icon} ${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label}`
-                : "Category"}
-              <span className={`gs-chip-chevron${categoryOpen ? " up" : ""}`} />
-            </button>
-            {categoryOpen && (
-              <div className="gs-category-dropdown">
-                <button className={`gs-cat-option${activeCategory === ALL ? " active" : ""}`}
-                  onClick={() => { setActiveCategory(ALL); setCategoryOpen(false); }}>All Jobs</button>
-                {CATEGORY_OPTIONS.map(o => (
-                  <button key={o.id}
-                    className={`gs-cat-option${activeCategory === o.id ? " active" : ""}`}
-                    onClick={() => { setActiveCategory(o.id); setCategoryOpen(false); }}>
-                    {o.icon} {o.label}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Left: search input + mobile filter button */}
+          <div className="gs-home-search-left">
+            <div className="gs-filter-bar">
+              <input
+                className="gs-search-input"
+                placeholder="🔍  Search by job title, company, or category..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              {/* Mobile-only filter trigger */}
+              <button
+                className={`gs-filter-btn${hasAnyFilter ? " has-filter" : ""}`}
+                onClick={() => setFilterOpen(true)}
+              >
+                {hasAnyFilter ? `Filters${advFilterCount + (activeCategory !== ALL ? 1 : 0) > 1 ? ` (${advFilterCount + (activeCategory !== ALL ? 1 : 0)})` : activeCategoryLabel ? `: ${activeCategoryLabel}` : ""}` : "Filter"}
+              </button>
+            </div>
           </div>
 
-          {/* ── Pay ── */}
-          <div className="gs-dropdown-wrap" ref={payRef}>
-            <button
-              className={`gs-dropdown-chip${(payMin || payMax) ? " active" : payOpen ? " open" : ""}`}
-              onClick={() => { setPayOpen(o => !o); setCategoryOpen(false); setLocationOpen(false); }}
-            >
-              {payChipLabel}
-              <span className={`gs-chip-chevron${payOpen ? " up" : ""}`} />
-            </button>
-            {payOpen && (
-              <div className="gs-pay-dropdown">
-                <p className="gs-location-dropdown-title">Pay Range</p>
-                <div className="gs-pay-dropdown-inputs">
-                  <div className="gs-adv-pay-wrap">
-                    <span className="gs-adv-dollar">$</span>
-                    <input className="gs-adv-input" type="number" min="0" placeholder="Min"
-                      value={payMin} onChange={e => setPayMin(e.target.value)} autoFocus />
+          {/* Right: Category · Pay · Location chips (desktop) */}
+          <div className="gs-home-search-right">
+
+            {/* ── Category ── */}
+            <div className="gs-dropdown-wrap" ref={categoryRef}>
+              <button
+                className={`gs-dropdown-chip${activeCategory !== ALL ? " active" : categoryOpen ? " open" : ""}`}
+                onClick={() => { setCategoryOpen(o => !o); setLocationOpen(false); setPayOpen(false); }}
+              >
+                {activeCategory !== ALL
+                  ? `${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.icon} ${CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label}`
+                  : "Category"}
+                <span className={`gs-chip-chevron${categoryOpen ? " up" : ""}`} />
+              </button>
+              {categoryOpen && (
+                <div className="gs-category-dropdown">
+                  <button className={`gs-cat-option${activeCategory === ALL ? " active" : ""}`}
+                    onClick={() => { setActiveCategory(ALL); setCategoryOpen(false); }}>All Jobs</button>
+                  {CATEGORY_OPTIONS.map(o => (
+                    <button key={o.id}
+                      className={`gs-cat-option${activeCategory === o.id ? " active" : ""}`}
+                      onClick={() => { setActiveCategory(o.id); setCategoryOpen(false); }}>
+                      {o.icon} {o.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Pay ── */}
+            <div className="gs-dropdown-wrap" ref={payRef}>
+              <button
+                className={`gs-dropdown-chip${(payMin || payMax) ? " active" : payOpen ? " open" : ""}`}
+                onClick={() => { setPayOpen(o => !o); setCategoryOpen(false); setLocationOpen(false); }}
+              >
+                {payChipLabel}
+                <span className={`gs-chip-chevron${payOpen ? " up" : ""}`} />
+              </button>
+              {payOpen && (
+                <div className="gs-pay-dropdown">
+                  <p className="gs-location-dropdown-title">Pay Range</p>
+                  <div className="gs-pay-dropdown-inputs">
+                    <div className="gs-adv-pay-wrap">
+                      <span className="gs-adv-dollar">$</span>
+                      <input className="gs-adv-input" type="number" min="0" placeholder="Min"
+                        value={payMin} onChange={e => setPayMin(e.target.value)} autoFocus />
+                    </div>
+                    <span className="gs-pay-dash">–</span>
+                    <div className="gs-adv-pay-wrap">
+                      <span className="gs-adv-dollar">$</span>
+                      <input className="gs-adv-input" type="number" min="0" placeholder="Max"
+                        value={payMax} onChange={e => setPayMax(e.target.value)} />
+                    </div>
                   </div>
-                  <span className="gs-pay-dash">–</span>
-                  <div className="gs-adv-pay-wrap">
-                    <span className="gs-adv-dollar">$</span>
-                    <input className="gs-adv-input" type="number" min="0" placeholder="Max"
-                      value={payMax} onChange={e => setPayMax(e.target.value)} />
+                  <div className="gs-location-dropdown-footer">
+                    {(payMin || payMax) && (
+                      <button className="gs-location-clear"
+                        onClick={() => { setPayMin(""); setPayMax(""); }}>Clear</button>
+                    )}
                   </div>
                 </div>
-                <div className="gs-location-dropdown-footer">
-                  {(payMin || payMax) && (
-                    <button className="gs-location-clear"
-                      onClick={() => { setPayMin(""); setPayMax(""); }}>Clear</button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* ── Location ── */}
-          <div className="gs-dropdown-wrap" ref={locationRef}>
-            <button
-              className={`gs-dropdown-chip${locationQuery ? " active" : locationOpen ? " open" : ""}`}
-              onClick={() => { setLocationOpen(o => !o); setCategoryOpen(false); setPayOpen(false); }}
-            >
-              📍 Location
-              <span className={`gs-chip-chevron${locationOpen ? " up" : ""}`} />
-            </button>
-            {locationOpen && (
-              <div className="gs-location-dropdown">
-                <p className="gs-location-dropdown-title">Location</p>
-                <div className="gs-location-search-wrap">
-                  <input className="gs-location-search-input" type="text"
-                    placeholder="Search by city, state, or zip code"
-                    value={locationQuery} onChange={e => setLocationQuery(e.target.value)} autoFocus />
-                  <span className="gs-location-search-icon">🔍</span>
+            {/* ── Location ── */}
+            <div className="gs-dropdown-wrap" ref={locationRef}>
+              <button
+                className={`gs-dropdown-chip${locationQuery ? " active" : locationOpen ? " open" : ""}`}
+                onClick={() => { setLocationOpen(o => !o); setCategoryOpen(false); setPayOpen(false); }}
+              >
+                📍 Location
+                <span className={`gs-chip-chevron${locationOpen ? " up" : ""}`} />
+              </button>
+              {locationOpen && (
+                <div className="gs-location-dropdown">
+                  <p className="gs-location-dropdown-title">Location</p>
+                  <div className="gs-location-search-wrap">
+                    <input className="gs-location-search-input" type="text"
+                      placeholder="Search by city, state, or zip code"
+                      value={locationQuery} onChange={e => setLocationQuery(e.target.value)} autoFocus />
+                    <span className="gs-location-search-icon">🔍</span>
+                  </div>
+                  <p className="gs-location-radius-label">
+                    Search radius for locations: <strong>{locationRadius} miles</strong>
+                  </p>
+                  <input className="gs-location-slider" type="range" min="1" max="100"
+                    value={locationRadius} onChange={e => setLocationRadius(parseInt(e.target.value))}
+                    style={{ background: `linear-gradient(to right, #1a1a2e 0%, #1a1a2e ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 100%)` }}
+                  />
+                  <div className="gs-location-slider-labels">
+                    <span>1 mile</span><span>100 miles</span>
+                  </div>
+                  <div className="gs-location-dropdown-footer">
+                    {(locationQuery || locationRadius !== 50) && (
+                      <button className="gs-location-clear"
+                        onClick={() => { setLocationQuery(""); setLocationRadius(50); }}>Clear</button>
+                    )}
+                  </div>
                 </div>
-                <p className="gs-location-radius-label">
-                  Search radius for locations: <strong>{locationRadius} miles</strong>
-                </p>
-                <input className="gs-location-slider" type="range" min="1" max="100"
-                  value={locationRadius} onChange={e => setLocationRadius(parseInt(e.target.value))}
-                  style={{ background: `linear-gradient(to right, #1a1a2e 0%, #1a1a2e ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 ${(locationRadius - 1) / 99 * 100}%, #e0e0e0 100%)` }}
-                />
-                <div className="gs-location-slider-labels">
-                  <span>1 mile</span><span>100 miles</span>
-                </div>
-                <div className="gs-location-dropdown-footer">
-                  {(locationQuery || locationRadius !== 50) && (
-                    <button className="gs-location-clear"
-                      onClick={() => { setLocationQuery(""); setLocationRadius(50); }}>Clear</button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-        </div>{/* end gs-filter-chips-row */}
+          </div>{/* end gs-home-search-right */}
+
+        </div>{/* end gs-home-search-inner */}
 
         {/* Mobile filter bottom sheet */}
         {filterOpen && (
