@@ -15,10 +15,10 @@ const FIELD  = { marginBottom: 14 };
 const CHIP   = (active) => ({ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 50, border: `1.5px solid ${active ? "#FF6B35" : "#e5e7eb"}`, background: active ? "rgba(255,107,53,0.07)" : "#fff", color: active ? "#FF6B35" : "#555", fontWeight: active ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginRight: 6, marginBottom: 6 });
 
 const STATUS_STYLE = {
-  pending:  { cls: "badge-orange", label: "Under Review"        },
-  reviewed: { cls: "badge-blue",   label: "Under Review"        },
-  accepted: { cls: "badge-green",  label: "Interview Scheduled" },
-  rejected: { cls: "badge-gray",   label: "Not Selected"        },
+  pending:  { cls: "badge-orange", label: "Under Review" },
+  reviewed: { cls: "badge-blue",   label: "Under Review" },
+  accepted: { cls: "badge-green",  label: "Accepted"     },
+  rejected: { cls: "badge-gray",   label: "Not Selected" },
 };
 
 export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
@@ -207,9 +207,9 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                     <p className="dash-stat-label">Unread Messages</p>
                   </div>
                   <div className="dash-stat-card">
-                    <div className="dash-stat-icon">📅</div>
+                    <div className="dash-stat-icon">✅</div>
                     <p className="dash-stat-val">{interviewCount}</p>
-                    <p className="dash-stat-label">Interviews Scheduled</p>
+                    <p className="dash-stat-label">Accepted</p>
                   </div>
                   <div className="dash-stat-card">
                     <div className="dash-stat-icon">🔄</div>
