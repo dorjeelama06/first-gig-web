@@ -136,6 +136,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
         onSignOut={handleSignOut}
         onDashboard={onDashboard}
         onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        showDashboard={!!user}
       />
 
       {/* Handshake-style header: search left · filter chips right */}

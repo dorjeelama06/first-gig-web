@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-export default function Navbar({ user, onLogin, onRegister, onSignOut, onDashboard, onHome }) {
+export default function Navbar({ user, onLogin, onRegister, onSignOut, onDashboard, onHome, showDashboard }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -36,6 +36,21 @@ export default function Navbar({ user, onLogin, onRegister, onSignOut, onDashboa
       <div className="gs-navbar-actions">
         {user ? (
           <div className="gs-nav-user-wrap" ref={menuRef}>
+            {/* Visible Dashboard shortcut — shown when browsing as a logged-in user */}
+            {showDashboard && onDashboard && (
+              <button
+                onClick={onDashboard}
+                style={{
+                  padding: "7px 14px", marginRight: 8,
+                  background: "rgba(255,107,53,0.1)", color: "#FF6B35",
+                  border: "1.5px solid rgba(255,107,53,0.3)", borderRadius: 20,
+                  fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ← Dashboard
+              </button>
+            )}
             {/* Avatar button */}
             <button
               className={`gs-nav-avatar${menuOpen ? " open" : ""}`}
