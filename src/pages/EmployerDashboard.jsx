@@ -406,33 +406,40 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                       const statusInfo = STATUS_LABELS[a.status] || STATUS_LABELS.pending;
                       const appliedDate = new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
                       return (
-                        <div key={a.id} className="dash-list-item" style={{ flexWrap: "wrap", gap: 12 }}>
-                          <div className="dash-list-left" style={{ flex: 1, minWidth: 180 }}>
-                            <p className="dash-list-title">{name}</p>
+                        <div key={a.id} className="dash-list-item" style={{ flexWrap: "wrap", gap: 12, alignItems: "flex-start" }}>
+                          {/* Left: applicant info + status badge */}
+                          <div className="dash-list-left" style={{ flex: 1, minWidth: 200 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                              <p className="dash-list-title" style={{ margin: 0 }}>{name}</p>
+                              <span className={`dash-badge ${statusInfo.cls}`}>{statusInfo.label}</span>
+                            </div>
                             <p className="dash-list-sub">Re: {a.jobs?.job_title}</p>
                             <p className="dash-list-meta">Applied {appliedDate}</p>
+                            {s?.phone && (
+                              <p className="dash-list-meta" style={{ marginTop: 2 }}>📞 {s.phone}</p>
+                            )}
                             {s?.interests?.length > 0 && (
                               <p className="dash-list-meta" style={{ marginTop: 2 }}>
                                 🏷️ {s.interests.slice(0, 3).join(" · ")}
                               </p>
                             )}
                           </div>
-                          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          {/* Right: change status + message */}
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "stretch", minWidth: 130 }}>
                             <select
                               value={a.status}
                               onChange={e => handleStatusChange(a.id, e.target.value)}
-                              style={{ fontSize: 12, padding: "4px 8px", border: "1.5px solid #eee", borderRadius: 8, background: "#fff", cursor: "pointer", color: "#555", fontWeight: 600 }}
+                              style={{ fontSize: 12, padding: "6px 10px", border: "1.5px solid #e0e0e0", borderRadius: 8, background: "#f9f9f9", cursor: "pointer", color: "#444", fontWeight: 600, fontFamily: "inherit", outline: "none", width: "100%" }}
                             >
                               <option value="pending">New</option>
                               <option value="reviewed">Under Review</option>
                               <option value="accepted">Accepted</option>
                               <option value="rejected">Declined</option>
                             </select>
-                            <span className={`dash-badge ${statusInfo.cls}`}>{statusInfo.label}</span>
                             <button
                               onClick={() => handleMessageApplicant(a)}
                               disabled={messagingId === a.id}
-                              style={{ fontSize: 12, padding: "5px 14px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", opacity: messagingId === a.id ? 0.6 : 1 }}
+                              style={{ fontSize: 12, padding: "7px 12px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, cursor: messagingId === a.id ? "not-allowed" : "pointer", opacity: messagingId === a.id ? 0.6 : 1, fontFamily: "inherit", whiteSpace: "nowrap", textAlign: "center" }}
                             >
                               {messagingId === a.id ? "Opening..." : "💬 Message"}
                             </button>
