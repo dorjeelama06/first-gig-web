@@ -18,7 +18,7 @@ const STATUS_STYLE = {
   pending:  { cls: "badge-orange", label: "Under Review"        },
   reviewed: { cls: "badge-blue",   label: "Under Review"        },
   accepted: { cls: "badge-green",  label: "Interview Scheduled" },
-  rejected: { cls: "badge-gray",   label: "Not Selected"        },
+  rejected: { cls: "badge-red",    label: "Declined"            },
 };
 
 export default function SeekerDashboard({ user, onSignOut, onBrowse }) {

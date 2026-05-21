@@ -17,7 +17,7 @@ const STATUS_LABELS = {
   pending:  { label: "New",      cls: "badge-orange" },
   reviewed: { label: "Under Review", cls: "badge-blue"   },
   accepted: { label: "Accepted", cls: "badge-green"  },
-  rejected: { label: "Declined", cls: "badge-gray"   },
+  rejected: { label: "Declined", cls: "badge-red"    },
 };
 
 export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
