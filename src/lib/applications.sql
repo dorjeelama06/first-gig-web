@@ -33,6 +33,12 @@ create policy "Employers can update status"
   on public.applications for update
   using (auth.uid() = employer_id);
 
+-- ── Enable Supabase Realtime on applications table ───────────
+-- Without these two lines, postgres_changes subscriptions silently receive nothing.
+-- Run these in the Supabase SQL Editor if not already done.
+alter publication supabase_realtime add table public.applications;
+alter table public.applications replica identity full;
+
 -- ── Fix conversations: employers initiate, not seekers ───────────
 drop policy if exists "Seekers can start conversations" on public.conversations;
 

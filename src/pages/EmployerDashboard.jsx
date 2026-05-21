@@ -118,6 +118,14 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
     return unsubscribe;
   }, [user.id]);
 
+  // Polling fallback — refreshes every 30 s in case the realtime subscription misses an event
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchEmployerApplicants(user.id).then(data => setApplicants(data)).catch(() => {});
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [user.id]);
+
   const handleToggleClose = async (job) => {
     const { error } = await supabase.from("jobs").update({ is_closed: !job.is_closed }).eq("id", job.id);
     if (!error) refreshJobs();
