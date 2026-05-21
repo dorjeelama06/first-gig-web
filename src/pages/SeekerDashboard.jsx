@@ -213,7 +213,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                   </div>
                   <div className="dash-stat-card">
                     <div className="dash-stat-icon">🔄</div>
-                    <p className="dash-stat-val">{applications.filter(a => a.status === "pending").length}</p>
+                    <p className="dash-stat-val">{applications.filter(a => a.status === "pending" || a.status === "reviewed").length}</p>
                     <p className="dash-stat-label">Under Review</p>
                   </div>
                 </div>
