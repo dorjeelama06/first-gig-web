@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/shared/Navbar";
 import ChatWindow from "../components/chat/ChatWindow";
 import ConversationList from "../components/chat/ConversationList";
-import { fetchSeekerApplications } from "../lib/applications";
+import { fetchSeekerApplications, subscribeToApplicationUpdates } from "../lib/applications";
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { supabase } from "../lib/supabase";
 import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
@@ -115,6 +115,22 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
       .catch(() => setAppsLoading(false));
   }, [user.id]);
 
+  // Real-time application status updates
+  useEffect(() => {
+    const unsubscribe = subscribeToApplicationUpdates(user.id, () => {
+      fetchSeekerApplications(user.id).then(setApplications).catch(() => {});
+    });
+    return unsubscribe;
+  }, [user.id]);
+
+  // Polling fallback — refreshes every 30 s in case realtime misses an update
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchSeekerApplications(user.id).then(setApplications).catch(() => {});
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [user.id]);
+
   // Real-time unread count
   useEffect(() => {
     fetchUnreadCount(user.id, "seeker").then(setUnreadCount);
@@ -191,9 +207,9 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                     <p className="dash-stat-label">Unread Messages</p>
                   </div>
                   <div className="dash-stat-card">
-                    <div className="dash-stat-icon">📅</div>
+                    <div className="dash-stat-icon">✅</div>
                     <p className="dash-stat-val">{interviewCount}</p>
-                    <p className="dash-stat-label">Interviews Scheduled</p>
+                    <p className="dash-stat-label">Accepted</p>
                   </div>
                   <div className="dash-stat-card">
                     <div className="dash-stat-icon">🔄</div>

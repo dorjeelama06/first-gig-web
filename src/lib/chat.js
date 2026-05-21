@@ -30,7 +30,7 @@ export async function fetchConversations(userId, role) {
       id, created_at,
       jobs(id, job_title, employer_id),
       employers(company_name),
-      seekers(first_name, last_name),
+      seekers(first_name, last_name, email),
       messages(id, content, created_at, sender_id, read)
     `)
     .eq(filter, userId)
@@ -97,7 +97,7 @@ export async function fetchConversationById(conversationId) {
       id, created_at,
       jobs(id, job_title, employer_id),
       employers(company_name),
-      seekers(first_name, last_name),
+      seekers(first_name, last_name, email),
       messages(id, content, created_at, sender_id, read)
     `)
     .eq("id", conversationId)

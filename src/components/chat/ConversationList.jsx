@@ -30,7 +30,9 @@ export default function ConversationList({ userId, role, activeId, onSelect, ini
 
   const getOtherName = (c) => {
     if (role === "seeker") return c.employers?.company_name ?? "Employer";
-    return c.seekers ? `${c.seekers.first_name} ${c.seekers.last_name}` : "Applicant";
+    if (!c.seekers) return "Applicant";
+    const fullName = `${c.seekers.first_name ?? ""} ${c.seekers.last_name ?? ""}`.trim();
+    return fullName || c.seekers.email || "Applicant";
   };
 
   const hasUnread = (c) => {
@@ -59,8 +61,8 @@ export default function ConversationList({ userId, role, activeId, onSelect, ini
       <p style={{ color: "#bbb", fontSize: 13, margin: 0, fontWeight: 600 }}>No conversations yet</p>
       <p style={{ color: "#ccc", fontSize: 12, margin: "6px 0 0" }}>
         {role === "seeker"
-          ? "Browse jobs and message an employer to get started"
-          : "Conversations will appear here when applicants message you"}
+          ? "Apply to jobs — employers will reach out to you here"
+          : "Message an applicant from the Applicants tab to start a conversation"}
       </p>
     </div>
   );

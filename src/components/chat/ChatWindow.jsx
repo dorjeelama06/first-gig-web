@@ -56,8 +56,13 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
   );
 
   const otherName = role === "seeker"
-    ? conversation.employers?.company_name
-    : conversation.seekers ? `${conversation.seekers.first_name} ${conversation.seekers.last_name}` : "Applicant";
+    ? (conversation.employers?.company_name ?? "Employer")
+    : (() => {
+        const s = conversation.seekers;
+        if (!s) return "Applicant";
+        const fullName = `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim();
+        return fullName || s.email || "Applicant";
+      })();
 
   const formatTime = (ts) =>
     new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });

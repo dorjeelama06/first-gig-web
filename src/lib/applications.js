@@ -86,6 +86,26 @@ export async function updateApplicationStatus(applicationId, status) {
   if (error) throw error;
 }
 
+/* Subscribe to application status changes for a seeker — returns an unsubscribe fn.
+   Fires onUpdate() whenever any of their applications is updated (e.g. status change). */
+export function subscribeToApplicationUpdates(seekerId, onUpdate) {
+  const channel = supabase
+    .channel(`application-updates-${seekerId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "applications",
+        filter: `seeker_id=eq.${seekerId}`,
+      },
+      () => onUpdate()
+    )
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+}
+
 /* Subscribe to new applications for an employer — returns an unsubscribe fn.
    Fires onNew(application) whenever a seeker applies to any of their jobs. */
 export function subscribeToNewApplications(employerId, onNew) {
