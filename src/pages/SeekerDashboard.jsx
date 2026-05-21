@@ -17,7 +17,7 @@ const CHIP   = (active) => ({ display: "inline-flex", alignItems: "center", gap:
 const STATUS_STYLE = {
   pending:  { cls: "badge-orange", label: "Under Review"        },
   reviewed: { cls: "badge-blue",   label: "Under Review"        },
-  accepted: { cls: "badge-green",  label: "Interview Scheduled" },
+  accepted: { cls: "badge-green",  label: "Accepted"            },
   rejected: { cls: "badge-red",    label: "Declined"            },
 };
 
