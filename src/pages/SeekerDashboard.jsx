@@ -315,6 +315,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                   userId={user.id}
                   role="seeker"
                   onBack={() => setActiveConvo(null)}
+                  onRead={() => fetchUnreadCount(user.id, "seeker").then(setUnreadCount)}
                 />
               </div>
             </>

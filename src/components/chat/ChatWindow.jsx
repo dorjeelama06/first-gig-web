@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchMessages, sendMessage, subscribeToMessages, markMessagesAsRead } from "../../lib/chat";
 
-export default function ChatWindow({ conversation, userId, role, onBack }) {
+export default function ChatWindow({ conversation, userId, role, onBack, onRead }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -16,7 +16,9 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
     fetchMessages(conversation.id).then(msgs => {
       setMessages(msgs);
       setLoading(false);
-      markMessagesAsRead(conversation.id, userId);
+      markMessagesAsRead(conversation.id, userId).then(() => {
+        onRead?.();
+      });
     });
 
     const unsubscribe = subscribeToMessages(conversation.id, newMsg => {
