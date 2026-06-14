@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchConversations, subscribeToConversationUpdates, getLastMessage } from "../../lib/chat";
 
-export default function ConversationList({ userId, role, activeId, onSelect, initialConvoId }) {
+export default function ConversationList({ userId, role, activeId, onSelect, initialConvoId, onConversationRead }) {
   const [convos, setConvos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +40,17 @@ export default function ConversationList({ userId, role, activeId, onSelect, ini
     return last && last.sender_id !== userId && !last.read;
   };
 
+  const handleSelect = (c) => {
+    if (hasUnread(c)) {
+      setConvos(prev => prev.map(x => x.id !== c.id ? x : {
+        ...x,
+        messages: x.messages.map(m => m.sender_id !== userId ? { ...m, read: true } : m),
+      }));
+      onConversationRead?.();
+    }
+    onSelect(c);
+  };
+
   const formatTime = (ts) => {
     if (!ts) return "";
     const d = new Date(ts);
@@ -76,7 +87,7 @@ export default function ConversationList({ userId, role, activeId, onSelect, ini
           <div
             key={c.id}
             className={`dash-convo-item ${activeId === c.id ? "active" : ""}`}
-            onClick={() => onSelect(c)}
+            onClick={() => handleSelect(c)}
           >
             <div className="dash-convo-row">
               <span className="dash-convo-name">{getOtherName(c)}</span>

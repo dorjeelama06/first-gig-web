@@ -323,6 +323,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                       role="seeker"
                       activeId={activeConvo?.id}
                       onSelect={setActiveConvo}
+                      onConversationRead={() => setUnreadCount(c => Math.max(0, c - 1))}
                     />
                   </div>
                 </div>
