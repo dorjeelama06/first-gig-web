@@ -38,6 +38,11 @@ No test, lint, or typecheck commands exist yet.
 - **Mobile messages**: `has-active` CSS class on `.dash-messages-layout` toggles between convo list and chat panel; `activeConvo` state drives this in both dashboard components
 - **Employer-initiated chat only**: RLS on `conversations` only allows employers to INSERT; seekers cannot start conversations
 
+- Database schema is shared with first-gig-mobile and lives in that repo at
+  supabase/migrations/. Do not write migrations here. If a table's policy
+  isn't visible, say it needs verifying in the Supabase dashboard rather
+  than assuming it's missing.
+
 ## Gotchas
 <!-- Add lessons here as they come up -->
 
