@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { CATEGORY_OPTIONS, AVAILABILITY_OPTIONS } from "../../constants/options";
+import { reportJob } from "../../lib/reports";
+import ReportModal from "./ReportModal";
 
 function formatPay(job) {
   if (job.pay_type === "flat") return `$${job.pay_min} flat rate`;
@@ -28,8 +30,9 @@ function GlanceRow({ icon, label, value, sub }) {
 }
 
 export default function JobDetail({ job, user, onApply, appliedJobIds = [], onClose }) {
-  const [applying, setApplying] = useState(false);
+  const [applying, setApplying]     = useState(false);
   const [justApplied, setJustApplied] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const isApplied = justApplied || appliedJobIds.includes(job?.id);
 
@@ -182,6 +185,20 @@ export default function JobDetail({ job, user, onApply, appliedJobIds = [], onCl
           )}
           {job.requirements && <p className="gs-section-body" style={{ marginTop: 8 }}>{job.requirements}</p>}
         </>
+      )}
+
+      {/* Report link */}
+      <div className="gs-report-link-wrap">
+        <button className="gs-report-link" onClick={() => setReportOpen(true)}>
+          🚩 Report this job posting
+        </button>
+      </div>
+
+      {reportOpen && (
+        <ReportModal
+          onClose={() => setReportOpen(false)}
+          onSubmit={(reason, details) => reportJob(job.id, user?.id, reason, details)}
+        />
       )}
 
     </div>
