@@ -83,6 +83,7 @@ export function subscribeToConversationUpdates(userId, onUpdate, tag = "default"
   const channel = supabase
     .channel(`convo-updates-${userId}-${tag}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, onUpdate)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, onUpdate)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations" }, onUpdate)
     .subscribe();
 

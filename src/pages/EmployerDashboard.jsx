@@ -497,6 +497,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   userId={user.id}
                   role="poster"
                   onBack={() => setActiveConvo(null)}
+                  onRead={() => fetchUnreadCount(user.id, "poster").then(setUnreadCount)}
                 />
               </div>
             </>
