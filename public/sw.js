@@ -1,5 +1,5 @@
-const CACHE = 'firstgig-v1';
-const PRECACHE = ['/gig-app/', '/gig-app/index.html'];
+const CACHE = 'firstgig-v2';
+const PRECACHE = ['/first-gig-web/', '/first-gig-web/index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)));

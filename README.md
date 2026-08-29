@@ -27,6 +27,6 @@ npm run dev
 Then open http://localhost:5173 in your browser.
 
 ## Live Preview
-[Open in StackBlitz](https://stackblitz.com/github/YOUR_USERNAME/gig-app)
+[Open in StackBlitz](https://stackblitz.com/github/YOUR_USERNAME/first-gig-web)
 
 > Replace `YOUR_USERNAME` with your GitHub username after pushing.
