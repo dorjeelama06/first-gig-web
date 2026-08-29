@@ -1,12 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchMessages, sendMessage, subscribeToMessages, markMessagesAsRead } from "../../lib/chat";
+import { reportUser } from "../../lib/reports";
+import ReportUserModal from "../shared/ReportUserModal";
 
 export default function ChatWindow({ conversation, userId, role, onBack }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const bottomRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     if (!conversation) return;
@@ -64,6 +77,8 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
         return fullName || s.email || "Applicant";
       })();
 
+  const otherId = role === "seeker" ? conversation.employers?.id : conversation.seekers?.id;
+
   const formatTime = (ts) =>
     new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -77,9 +92,31 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
           <button className="dash-chat-back" onClick={onBack} aria-label="Back">‹</button>
         )}
         <div className="dash-chat-avatar">{otherName?.[0] ?? "?"}</div>
-        <div>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <p className="dash-chat-hname">{otherName}</p>
           <p className="dash-chat-hsub">Re: {conversation.jobs?.job_title}</p>
+        </div>
+        <div className="dash-chat-menu" ref={menuRef}>
+          <button
+            className="dash-chat-menu-btn"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Chat options"
+            aria-expanded={menuOpen}
+          >
+            ⋮
+          </button>
+          {menuOpen && (
+            <div className="dash-chat-menu-dropdown" role="menu">
+              <button
+                className="dash-chat-menu-item dash-chat-menu-item--danger"
+                role="menuitem"
+                disabled={!otherId}
+                onClick={() => { setMenuOpen(false); setReportOpen(true); }}
+              >
+                🚩 Report user
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -119,6 +156,14 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
         />
         <button className="dash-send-btn" onClick={handleSend} disabled={sending}>➤</button>
       </div>
+
+      {reportOpen && (
+        <ReportUserModal
+          reportedName={otherName}
+          onClose={() => setReportOpen(false)}
+          onSubmit={(reason, details) => reportUser(otherId, userId, reason, details)}
+        />
+      )}
     </div>
   );
 }

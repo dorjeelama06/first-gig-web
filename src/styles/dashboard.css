@@ -276,6 +276,58 @@
 .dash-chat-hname { font-weight: 700; font-size: 15px; color: #1a1a2e; margin: 0 0 1px; }
 .dash-chat-hsub  { font-size: 12px; color: #888; margin: 0; }
 
+/* ── Chat header kebab menu ── */
+.dash-chat-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+.dash-chat-menu-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.dash-chat-menu-btn:hover { background: #f3f4f6; color: #1a1a2e; }
+.dash-chat-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  min-width: 180px;
+  z-index: 50;
+  overflow: hidden;
+}
+.dash-chat-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.dash-chat-menu-item:hover:not(:disabled) { background: #f7f8fa; }
+.dash-chat-menu-item:disabled { opacity: 0.45; cursor: default; }
+.dash-chat-menu-item--danger { color: #c0392b; }
+.dash-chat-menu-item--danger:hover:not(:disabled) { background: #fdf2f2; }
+
 .dash-chat-messages {
   flex: 1;
   overflow-y: auto;
