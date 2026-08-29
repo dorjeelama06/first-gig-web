@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchMessages, sendMessage, subscribeToMessages, markMessagesAsRead } from "../../lib/chat";
 import { reportUser } from "../../lib/reports";
+import { blockUser } from "../../lib/blocks";
 import ReportUserModal from "../shared/ReportUserModal";
+import BlockUserModal from "../shared/BlockUserModal";
 
-export default function ChatWindow({ conversation, userId, role, onBack }) {
+export default function ChatWindow({ conversation, userId, role, onBack, onBlocked }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
   const bottomRef = useRef(null);
   const menuRef = useRef(null);
 
@@ -115,6 +118,14 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
               >
                 🚩 Report user
               </button>
+              <button
+                className="dash-chat-menu-item dash-chat-menu-item--danger"
+                role="menuitem"
+                disabled={!otherId}
+                onClick={() => { setMenuOpen(false); setBlockOpen(true); }}
+              >
+                🚫 Block user
+              </button>
             </div>
           )}
         </div>
@@ -162,6 +173,14 @@ export default function ChatWindow({ conversation, userId, role, onBack }) {
           reportedName={otherName}
           onClose={() => setReportOpen(false)}
           onSubmit={(reason, details) => reportUser(otherId, userId, reason, details)}
+        />
+      )}
+
+      {blockOpen && (
+        <BlockUserModal
+          blockedName={otherName}
+          onClose={() => setBlockOpen(false)}
+          onConfirm={() => blockUser(otherId, userId).then(() => onBlocked?.())}
         />
       )}
     </div>

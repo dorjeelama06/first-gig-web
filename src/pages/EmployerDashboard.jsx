@@ -4,9 +4,11 @@ import ChatWindow from "../components/chat/ChatWindow";
 import ConversationList from "../components/chat/ConversationList";
 import PostJobModal from "../components/employer/PostJobModal";
 import ReportUserModal from "../components/shared/ReportUserModal";
+import BlockUserModal from "../components/shared/BlockUserModal";
 import { fetchEmployerApplicants, updateApplicationStatus, subscribeToNewApplications } from "../lib/applications";
 import { getOrCreateConversation, fetchConversationById, fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { reportUser } from "../lib/reports";
+import { blockUser, unblockUser, fetchBlockedUsers } from "../lib/blocks";
 import { supabase } from "../lib/supabase";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
@@ -25,6 +27,7 @@ const STATUS_LABELS = {
 export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [tab, setTab] = useState("overview");
   const [activeConvo, setActiveConvo] = useState(null);
+  const [convoRefreshKey, setConvoRefreshKey] = useState(0);
   const [postJobOpen, setPostJobOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
 
@@ -84,6 +87,8 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [messagingError, setMessagingError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [reportTarget, setReportTarget] = useState(null); // { id, name } | null
+  const [blockTarget, setBlockTarget] = useState(null); // { id, name } | null
+  const [blockedApplicants, setBlockedApplicants] = useState([]);
 
   // Fetch employer profile
   useEffect(() => {
@@ -97,6 +102,11 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
       .then(({ data }) => { if (data) setEmployerJobs(data); });
   };
   useEffect(refreshJobs, [user.id]);
+
+  // Fetch blocked applicants (for the Blocked Applicants section in Settings)
+  useEffect(() => {
+    fetchBlockedUsers(user.id, "poster").then(setBlockedApplicants).catch(() => {});
+  }, [user.id]);
 
   // Real-time unread count
   useEffect(() => {
@@ -453,6 +463,13 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                             >
                               🚩 Report
                             </button>
+                            <button
+                              className="dash-block-btn"
+                              onClick={() => setBlockTarget({ id: a.seeker_id, name })}
+                              disabled={!a.seeker_id}
+                            >
+                              🚫 Block
+                            </button>
                           </div>
                         </div>
                       );
@@ -495,6 +512,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   )}
                   <div className="dash-convo-list">
                     <ConversationList
+                      key={convoRefreshKey}
                       userId={user.id}
                       role="poster"
                       activeId={activeConvo?.id}
@@ -507,6 +525,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                   userId={user.id}
                   role="poster"
                   onBack={() => setActiveConvo(null)}
+                  onBlocked={() => { setActiveConvo(null); setConvoRefreshKey(k => k + 1); }}
                 />
               </div>
             </>
@@ -549,6 +568,35 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                       </div>
                     ))}
                   </div>
+                )}
+
+                {/* ── Blocked Applicants ── */}
+                {!editingProfile && (
+                  <>
+                    <p className="dash-section-title" style={{ marginTop: 24 }}>Blocked Applicants</p>
+                    {blockedApplicants.length === 0 ? (
+                      <div style={{ padding: "16px 0", textAlign: "center" }}>
+                        <p style={{ color: "#bbb", fontSize: 13 }}>You haven't blocked anyone</p>
+                      </div>
+                    ) : (
+                      <div className="dash-list">
+                        {blockedApplicants.map(b => (
+                          <div key={b.id} className="dash-list-item">
+                            <div className="dash-list-left">
+                              <p className="dash-list-title">{b.name}</p>
+                              <p className="dash-list-meta">Blocked {new Date(b.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                            </div>
+                            <button
+                              onClick={() => unblockUser(b.blocked_id, user.id).then(() => setBlockedApplicants(prev => prev.filter(x => x.id !== b.id)))}
+                              style={{ fontSize: 12, padding: "7px 14px", background: "#f5f5f5", color: "#555", border: "1.5px solid #e0e0e0", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                            >
+                              Unblock
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* ── Edit mode ── */}
@@ -626,6 +674,15 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
           reportedName={reportTarget.name}
           onClose={() => setReportTarget(null)}
           onSubmit={(reason, details) => reportUser(reportTarget.id, user.id, reason, details)}
+        />
+      )}
+
+      {/* Block user modal */}
+      {blockTarget && (
+        <BlockUserModal
+          blockedName={blockTarget.name}
+          onClose={() => setBlockTarget(null)}
+          onConfirm={() => blockUser(blockTarget.id, user.id).then(() => setApplicants(prev => prev.filter(a => a.seeker_id !== blockTarget.id)))}
         />
       )}
 

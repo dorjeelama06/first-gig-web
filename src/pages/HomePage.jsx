@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { applyToJob, fetchAppliedJobIds } from "../lib/applications";
+import { fetchBlockedIds } from "../lib/blocks";
 import Navbar from "../components/shared/Navbar";
 import JobCard from "../components/jobs/JobCard";
 import JobDetail from "../components/jobs/JobDetail";
@@ -35,18 +36,23 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     const fetchJobs = async () => {
       const { data, error } = await supabase
         .from("jobs")
-        .select("*, employers(company_name)")
+        .select("*, employers(id, company_name)")
         .or("is_closed.eq.false,is_closed.is.null")
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setJobs(data);
+        if (user) {
+          const blockedIds = await fetchBlockedIds(user.id);
+          setJobs(blockedIds.length === 0 ? data : data.filter(j => !blockedIds.includes(j.employers?.id)));
+        } else {
+          setJobs(data);
+        }
         // No auto-select — user must tap a card on mobile
       }
       setLoading(false);
     };
     fetchJobs();
-  }, []);
+  }, [user]);
 
   // Load which jobs this seeker has already applied to
   useEffect(() => {

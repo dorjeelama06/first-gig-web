@@ -4,6 +4,7 @@ import ChatWindow from "../components/chat/ChatWindow";
 import ConversationList from "../components/chat/ConversationList";
 import { fetchSeekerApplications, subscribeToApplicationUpdates } from "../lib/applications";
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
+import { fetchBlockedUsers, unblockUser } from "../lib/blocks";
 import { supabase } from "../lib/supabase";
 import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
 import "../styles/dashboard.css";
@@ -24,6 +25,8 @@ const STATUS_STYLE = {
 export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
   const [tab, setTab] = useState("overview");
   const [activeConvo, setActiveConvo] = useState(null);
+  const [convoRefreshKey, setConvoRefreshKey] = useState(0);
+  const [blockedEmployers, setBlockedEmployers] = useState([]);
 
   // Real data
   const [profile, setProfile] = useState(null);
@@ -129,6 +132,11 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
       fetchSeekerApplications(user.id).then(setApplications).catch(() => {});
     }, 30_000);
     return () => clearInterval(interval);
+  }, [user.id]);
+
+  // Fetch blocked employers (for the Blocked Employers section in Profile)
+  useEffect(() => {
+    fetchBlockedUsers(user.id, "seeker").then(setBlockedEmployers).catch(() => {});
   }, [user.id]);
 
   // Real-time unread count
@@ -319,6 +327,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                   </div>
                   <div className="dash-convo-list">
                     <ConversationList
+                      key={convoRefreshKey}
                       userId={user.id}
                       role="seeker"
                       activeId={activeConvo?.id}
@@ -331,6 +340,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                   userId={user.id}
                   role="seeker"
                   onBack={() => setActiveConvo(null)}
+                  onBlocked={() => { setActiveConvo(null); setConvoRefreshKey(k => k + 1); }}
                 />
               </div>
             </>
@@ -460,6 +470,31 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                                 {exp.dur && <span className="dash-badge badge-blue" style={{ flexShrink: 0 }}>{exp.dur}</span>}
                               </div>
                               {exp.desc && <p style={{ fontSize: 13, color: "#888", margin: 0, lineHeight: 1.5 }}>{exp.desc}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Blocked Employers */}
+                      <SectionTitle>Blocked Employers</SectionTitle>
+                      {blockedEmployers.length === 0 ? (
+                        <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: "20px 16px", textAlign: "center" }}>
+                          <p style={{ fontSize: 13, color: "#ccc", margin: 0 }}>You haven't blocked anyone</p>
+                        </div>
+                      ) : (
+                        <div className="dash-list">
+                          {blockedEmployers.map(b => (
+                            <div key={b.id} className="dash-list-item">
+                              <div className="dash-list-left">
+                                <p className="dash-list-title">{b.name}</p>
+                                <p className="dash-list-meta">Blocked {new Date(b.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+                              </div>
+                              <button
+                                onClick={() => unblockUser(b.blocked_id, user.id).then(() => setBlockedEmployers(prev => prev.filter(x => x.id !== b.id)))}
+                                style={{ fontSize: 12, padding: "7px 14px", background: "#f5f5f5", color: "#555", border: "1.5px solid #e0e0e0", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                              >
+                                Unblock
+                              </button>
                             </div>
                           ))}
                         </div>
