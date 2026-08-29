@@ -2,15 +2,15 @@
   "name": "First Gig",
   "short_name": "First Gig",
   "description": "Find local gigs for teens — babysitting, tutoring, lawn care & more.",
-  "start_url": "/gig-app/",
-  "scope": "/gig-app/",
+  "start_url": "/first-gig-web/",
+  "scope": "/first-gig-web/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#FF6B35",
   "icons": [
     {
-      "src": "/gig-app/icon.svg",
+      "src": "/first-gig-web/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
