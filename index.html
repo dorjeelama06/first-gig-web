@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#FF6B35" />
     <title>First Gig — Find Gigs Near You</title>
-    <link rel="manifest" href="/gig-app/manifest.json" />
-    <link rel="apple-touch-icon" href="/gig-app/icon.svg" />
+    <link rel="manifest" href="/first-gig-web/manifest.json" />
+    <link rel="apple-touch-icon" href="/first-gig-web/icon.svg" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="First Gig" />
-    <script type="module" crossorigin src="/gig-app/assets/index-CrOj0fK-.js"></script>
-    <link rel="stylesheet" crossorigin href="/gig-app/assets/index--CfpJJZy.css">
+    <script type="module" crossorigin src="/first-gig-web/assets/index-CrOj0fK-.js"></script>
+    <link rel="stylesheet" crossorigin href="/first-gig-web/assets/index--CfpJJZy.css">
   </head>
   <body>
     <div id="root"></div>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/gig-app/sw.js', { scope: '/gig-app/' })
+          navigator.serviceWorker.register('/first-gig-web/sw.js', { scope: '/first-gig-web/' })
             .catch(err => console.warn('SW registration failed:', err));
         });
       }
