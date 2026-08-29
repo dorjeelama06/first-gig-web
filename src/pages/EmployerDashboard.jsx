@@ -3,8 +3,10 @@ import Navbar from "../components/shared/Navbar";
 import ChatWindow from "../components/chat/ChatWindow";
 import ConversationList from "../components/chat/ConversationList";
 import PostJobModal from "../components/employer/PostJobModal";
+import ReportUserModal from "../components/shared/ReportUserModal";
 import { fetchEmployerApplicants, updateApplicationStatus, subscribeToNewApplications } from "../lib/applications";
 import { getOrCreateConversation, fetchConversationById, fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
+import { reportUser } from "../lib/reports";
 import { supabase } from "../lib/supabase";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
@@ -81,6 +83,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
   const [messagingId, setMessagingId] = useState(null);
   const [messagingError, setMessagingError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [reportTarget, setReportTarget] = useState(null); // { id, name } | null
 
   // Fetch employer profile
   useEffect(() => {
@@ -443,6 +446,13 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                             >
                               {messagingId === a.id ? "Opening..." : "💬 Message"}
                             </button>
+                            <button
+                              onClick={() => setReportTarget({ id: a.seeker_id, name })}
+                              disabled={!a.seeker_id}
+                              style={{ fontSize: 12, padding: "7px 12px", background: "#fdf2f2", color: "#c0392b", border: "1.5px solid #f5d5d5", borderRadius: 8, fontWeight: 700, cursor: a.seeker_id ? "pointer" : "not-allowed", opacity: a.seeker_id ? 1 : 0.5, fontFamily: "inherit", whiteSpace: "nowrap", textAlign: "center" }}
+                            >
+                              🚩 Report
+                            </button>
                           </div>
                         </div>
                       );
@@ -607,6 +617,15 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
           initialData={editingJob}
           onClose={() => setEditingJob(null)}
           onSuccess={() => { setEditingJob(null); refreshJobs(); }}
+        />
+      )}
+
+      {/* Report user modal */}
+      {reportTarget && (
+        <ReportUserModal
+          reportedName={reportTarget.name}
+          onClose={() => setReportTarget(null)}
+          onSubmit={(reason, details) => reportUser(reportTarget.id, user.id, reason, details)}
         />
       )}
 

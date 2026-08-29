@@ -1361,6 +1361,128 @@
 .report-done h3 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin: 0 0 8px; }
 .report-done p { font-size: 14px; color: #666; line-height: 1.5; margin: 0 0 24px; }
 
+/* ── Report USER modal (chat/applicant reporting — kept separate from job-report styles above) ── */
+.report-user-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.report-user-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.report-user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.report-user-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+}
+.report-user-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.report-user-close:hover { background: #f3f4f6; color: #1a1a2e; }
+.report-user-sub {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 16px;
+}
+.report-user-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.report-user-reason {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: #f9f9f9;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.report-user-reason:hover { border-color: #ef4444; background: #fff5f5; }
+.report-user-reason.selected { border-color: #ef4444; background: rgba(239,68,68,0.06); color: #1a1a2e; }
+.report-user-reason-icon { font-size: 16px; width: 22px; text-align: center; }
+.report-user-reason-label { flex: 1; }
+.report-user-reason-check { font-size: 14px; color: #ef4444; font-weight: 700; }
+.report-user-details {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1a1a2e;
+  resize: none;
+  margin-bottom: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.report-user-details:focus { border-color: #FF6B35; }
+.report-user-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.report-user-submit-btn {
+  width: 100%;
+  padding: 13px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.report-user-submit-btn:hover:not(:disabled) { background: #dc2626; }
+.report-user-submit-btn:disabled { opacity: 0.45; cursor: default; }
+.report-user-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 0;
+}
+.report-user-done-icon { font-size: 44px; margin-bottom: 12px; }
+.report-user-done h3 { font-size: 18px; font-weight: 800; color: #1a1a2e; margin: 0 0 8px; }
+.report-user-done p { font-size: 14px; color: #666; line-height: 1.5; margin: 0 0 24px; }
+
 @media (max-width: 768px) {
   .gs-legal-body  { padding: 20px 16px 48px; }
   .gs-legal-h2    { font-size: 14px; }
