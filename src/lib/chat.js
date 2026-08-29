@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { fetchBlockedIds } from "./blocks";
 
 /* Get existing conversation or create a new one */
 export async function getOrCreateConversation(jobId, seekerId, employerId) {
@@ -37,7 +38,12 @@ export async function fetchConversations(userId, role) {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  const blockedIds = await fetchBlockedIds(userId);
+  if (blockedIds.length === 0) return data || [];
+
+  const otherId = c => role === "seeker" ? c.employers?.id : c.seekers?.id;
+  return (data || []).filter(c => !blockedIds.includes(otherId(c)));
 }
 
 /* Fetch messages for a conversation */

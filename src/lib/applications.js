@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { fetchBlockedIds } from "./blocks";
 
 /* Apply to a job — idempotent (safe to call twice).
    Returns { id, alreadyApplied } on success.
@@ -51,13 +52,16 @@ export async function fetchSeekerApplications(seekerId) {
     .select(`
       id, status, created_at,
       jobs(id, job_title),
-      employers(company_name)
+      employers(id, company_name)
     `)
     .eq("seeker_id", seekerId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  const blockedIds = await fetchBlockedIds(seekerId);
+  if (blockedIds.length === 0) return data || [];
+  return (data || []).filter(a => !blockedIds.includes(a.employers?.id));
 }
 
 /* Fetch all applicants across an employer's jobs */
@@ -73,7 +77,10 @@ export async function fetchEmployerApplicants(employerId) {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  const blockedIds = await fetchBlockedIds(employerId);
+  if (blockedIds.length === 0) return data || [];
+  return (data || []).filter(a => !blockedIds.includes(a.seeker_id));
 }
 
 /* Update an application's status */

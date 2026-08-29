@@ -328,6 +328,107 @@
 .dash-chat-menu-item--danger { color: #c0392b; }
 .dash-chat-menu-item--danger:hover:not(:disabled) { background: #fdf2f2; }
 
+.dash-block-btn {
+  font-size: 12px;
+  padding: 7px 12px;
+  background: #fdf2f2;
+  color: #c0392b;
+  border: 1.5px solid #f5d5d5;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  text-align: center;
+}
+.dash-block-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.block-user-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.block-user-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.block-user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.block-user-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0;
+}
+.block-user-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #999;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.block-user-close:hover { background: #f3f4f6; color: #1a1a2e; }
+.block-user-sub {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+.block-user-error {
+  font-size: 13px;
+  color: #ef4444;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.block-user-actions {
+  display: flex;
+  gap: 10px;
+}
+.block-user-cancel-btn {
+  flex: 1;
+  padding: 13px;
+  background: transparent;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  color: #888;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.block-user-cancel-btn:disabled { opacity: 0.45; cursor: default; }
+.block-user-confirm-btn {
+  flex: 2;
+  padding: 13px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.block-user-confirm-btn:hover:not(:disabled) { background: #dc2626; }
+.block-user-confirm-btn:disabled { opacity: 0.45; cursor: default; }
+
 .dash-chat-messages {
   flex: 1;
   overflow-y: auto;
