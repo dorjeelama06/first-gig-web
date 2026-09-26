@@ -77,8 +77,9 @@ describe("validateSeekerStep", () => {
     expect(validateSeekerStep("contact", seeker({ parentEmail: "" }), TODAY)).toMatch(/parent or guardian/);
   });
 
-  it("does not require a parent email at 18", () => {
-    expect(validateSeekerStep("contact", seeker({ dob: "2008-09-26", parentEmail: "" }), TODAY)).toBe("");
+  it("requires a parent email at 18+", () => {
+    expect(validateSeekerStep("contact", seeker({ dob: "2008-09-26", parentEmail: "" }), TODAY)).toMatch(/parent or guardian/);
+    expect(validateSeekerStep("contact", seeker({ dob: "2008-09-26" }), TODAY)).toBe("");
   });
 
   it("rejects a parent email that is the seeker's own", () => {

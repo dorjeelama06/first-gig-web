@@ -6,7 +6,7 @@ import { fetchSeekerApplications, subscribeToApplicationUpdates } from "../lib/a
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { fetchBlockedUsers, unblockUser } from "../lib/blocks";
 import { supabase } from "../lib/supabase";
-import { ageFromDob } from "../lib/validation";
+import { ageFromDob, isValidEmail } from "../lib/validation";
 import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
@@ -72,6 +72,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
   const handleSaveProfile = async () => {
     if (!editForm.firstName.trim()) { setSaveError("First name is required."); return; }
+    if (!isValidEmail(editForm.parentEmail)) { setSaveError("A parent or guardian email is required."); return; }
     setSaveError("");
     setSaving(true);
     try {
@@ -528,7 +529,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
                     {/* Parent email */}
                     <div style={FIELD}>
-                      <label style={LABEL}>Parent / Guardian Email</label>
+                      <label style={LABEL}>Parent / Guardian Email *</label>
                       <input style={INPUT} value={editForm.parentEmail} onChange={e => ef("parentEmail", e.target.value)} placeholder="parent@email.com" type="email" />
                     </div>
 

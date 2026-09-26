@@ -56,14 +56,9 @@ export function validateSeekerStep(stepId, s, today = new Date()) {
       if (!isValidEmail(s.email)) return "Please enter a valid email address.";
       if (s.phone.trim() && s.phone.replace(/\D/g, "").length < 10) return "Please enter a 10-digit phone number, or leave it blank.";
       if (!isValidZip(s.zipCode)) return "Please enter a 5-digit zip code.";
-      const age = ageFromDob(s.dob, today);
-      if (age !== null && age < 18) {
-        if (!isValidEmail(s.parentEmail)) return "A parent or guardian email is required if you're under 18.";
-        if (s.parentEmail.trim().toLowerCase() === s.email.trim().toLowerCase()) {
-          return "Your parent or guardian email must be different from your own.";
-        }
-      } else if (s.parentEmail.trim() && !isValidEmail(s.parentEmail)) {
-        return "Please enter a valid parent or guardian email, or leave it blank.";
+      if (!isValidEmail(s.parentEmail)) return "A parent or guardian email is required.";
+      if (s.parentEmail.trim().toLowerCase() === s.email.trim().toLowerCase()) {
+        return "Your parent or guardian email must be different from your own.";
       }
       return passwordError(s.password, s.confirmPassword);
     }

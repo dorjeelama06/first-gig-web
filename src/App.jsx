@@ -382,7 +382,7 @@ export default function App() {
                   <StepAvailability sel={seeker.availability} toggle={id => toggleSeekerArr("availability", id)} />
                 )}
                 {currentStep === "distance" && <StepDistance v={seeker.distance} set={v => uS("distance", v)} />}
-                {currentStep === "contact" && <StepContact d={seeker} set={uS} age={age} />}
+                {currentStep === "contact" && <StepContact d={seeker} set={uS} />}
                 {currentStep === "seekerReview" && (
                   <SeekerReview d={seeker} age={age}
                     termsAgreed={termsAgreed} setTermsAgreed={setTermsAgreed}
