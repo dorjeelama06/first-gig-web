@@ -5,7 +5,7 @@ First Gig is a mobile-first job marketplace connecting teen/young job seekers wi
 - **Frontend**: React 18 + Vite 5, pure CSS (no component library), DM Sans font
 - **Backend**: None — Supabase handles auth, database (PostgreSQL), and Realtime
 - **Supabase client**: `@supabase/supabase-js` ^2 (`src/lib/supabase.js`)
-- **Deployment**: GitHub Pages via `gh-pages`, CI via `.github/workflows/`
+- **Deployment**: GitHub Pages at firstgigapp.com (custom domain via `public/CNAME`, Vite `base: '/'`), published only by CI (`.github/workflows/deploy.yml`, peaceiris/actions-gh-pages)
 - **Package manager**: npm
 - **Node**: 20 (pinned in CI)
 
@@ -25,9 +25,10 @@ First Gig is a mobile-first job marketplace connecting teen/young job seekers wi
 npm install          # install deps
 npm run dev          # dev server → http://localhost:5173
 npm run build        # production build → dist/
-npm run deploy       # build + push dist/ to gh-pages branch
+npm run lint         # eslint src
+npm test             # vitest run (no test files yet — exits 1)
 ```
-No test, lint, or typecheck commands exist yet.
+No typecheck command (plain JS). Deploy = merge to `main`; CI builds with the `VITE_SUPABASE_*` repo secrets and publishes `dist/` to the `gh-pages` branch. There is no manual deploy script.
 
 ## Conventions
 - **Files**: PascalCase components (`StepName.jsx`), camelCase lib/constants (`applications.js`, `steps.js`)
