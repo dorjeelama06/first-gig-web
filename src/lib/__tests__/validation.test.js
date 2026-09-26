@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   ageFromDob, todayIso, isValidEmail, isValidZip, validateSeekerStep, validatePosterStep,
+  parseMinAge, meetsMinAge,
 } from "../validation";
 
 // Local-time date, matching how the app reads "today"
@@ -113,5 +114,36 @@ describe("validatePosterStep", () => {
     expect(validatePosterStep("businessInfo", poster({ contactEmail: "x" }))).toMatch(/valid email/);
     expect(validatePosterStep("businessInfo", poster({ companyZip: "1" }))).toMatch(/zip/);
     expect(validatePosterStep("businessInfo", poster({ password: "short", confirmPassword: "short" }))).toMatch(/at least 8/);
+  });
+});
+
+describe("parseMinAge", () => {
+  it("parses the stored text value", () => {
+    expect(parseMinAge("18")).toBe(18);
+    expect(parseMinAge("21")).toBe(21);
+  });
+  it("falls back to the platform minimum when missing or blank", () => {
+    expect(parseMinAge(null)).toBe(14);
+    expect(parseMinAge(undefined)).toBe(14);
+    expect(parseMinAge("")).toBe(14);
+  });
+});
+
+describe("meetsMinAge", () => {
+  it("allows the seeker on their birthday", () => {
+    expect(meetsMinAge("2008-09-26", "18", TODAY)).toBe(true);
+  });
+  it("blocks the seeker the day before their birthday", () => {
+    expect(meetsMinAge("2008-09-27", "18", TODAY)).toBe(false);
+  });
+  it("blocks a 15-year-old from a 21+ job", () => {
+    expect(meetsMinAge("2011-01-01", "21", TODAY)).toBe(false);
+  });
+  it("uses the platform minimum when the job has no min_age", () => {
+    expect(meetsMinAge("2012-09-26", null, TODAY)).toBe(true);
+    expect(meetsMinAge("2012-09-27", "", TODAY)).toBe(false);
+  });
+  it("blocks when the dob is unknown", () => {
+    expect(meetsMinAge(null, "14", TODAY)).toBe(false);
   });
 });
