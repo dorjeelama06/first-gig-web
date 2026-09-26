@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CATEGORY_OPTIONS, AVAILABILITY_OPTIONS } from "../../constants/options";
+import { meetsMinAge, parseMinAge } from "../../lib/validation";
 import { reportJob } from "../../lib/reports";
 import ReportModal from "./ReportModal";
 
@@ -29,22 +30,44 @@ function GlanceRow({ icon, label, value, sub }) {
   );
 }
 
-export default function JobDetail({ job, user, onApply, appliedJobIds = [], onClose }) {
+/* Why a signed-in user can't apply, or null if they can.
+   seekerDob: undefined = loading, null = not a seeker, false = lookup failed (server still enforces). */
+function applyBlockReason(job, seekerDob) {
+  if (seekerDob === undefined) return "Checking eligibility...";
+  if (seekerDob === null) return "Only job seekers can apply";
+  if (seekerDob !== false && !meetsMinAge(seekerDob, job.min_age)) {
+    return `You must be ${parseMinAge(job.min_age)}+ to apply`;
+  }
+  return null;
+}
+
+export default function JobDetail({ job, user, seekerDob, onApply, appliedJobIds = [], onClose }) {
   const [applying, setApplying]     = useState(false);
   const [justApplied, setJustApplied] = useState(false);
+  const [applyErrorFor, setApplyErrorFor] = useState({ jobId: null, message: "" });
   const [reportOpen, setReportOpen] = useState(false);
 
+  // Scoped to the job it happened on, so switching jobs clears it
+  const applyError = applyErrorFor.jobId === job?.id ? applyErrorFor.message : "";
+
   const isApplied = justApplied || appliedJobIds.includes(job?.id);
+  const blockReason = user && job && !isApplied ? applyBlockReason(job, seekerDob) : null;
 
   const handleApply = async () => {
     if (!user) { onApply(job); return; }
-    if (isApplied || applying) return;
+    if (isApplied || applying || blockReason) return;
+    setApplyErrorFor({ jobId: null, message: "" });
     setApplying(true);
     try {
       const result = await onApply(job);
       if (result?.alreadyApplied || result?.success) setJustApplied(true);
     } catch (e) {
-      console.error("Apply failed:", e);
+      setApplyErrorFor({
+        jobId: job.id,
+        message: e?.message === "You're not eligible to apply to this job."
+          ? e.message
+          : "Couldn't send your application. Please try again.",
+      });
     } finally {
       setApplying(false);
     }
@@ -124,12 +147,17 @@ export default function JobDetail({ job, user, onApply, appliedJobIds = [], onCl
         <button
           className="gs-apply-btn"
           onClick={handleApply}
-          disabled={isApplied || applying}
-          style={isApplied ? { background: "#28a745", cursor: "default" } : {}}
+          disabled={isApplied || applying || !!blockReason}
+          style={isApplied ? { background: "#28a745", cursor: "default" }
+            : blockReason ? { background: "#ccc", cursor: "not-allowed" } : {}}
         >
-          {applying ? "Applying..." : isApplied ? "✅ Applied" : user ? "Apply Now" : "Sign Up to Apply →"}
+          {applying ? "Applying..." : isApplied ? "✅ Applied" : blockReason ?? (user ? "Apply Now" : "Sign Up to Apply →")}
         </button>
       </div>
+
+      {applyError && (
+        <p className="gs-applied-note" role="alert" style={{ color: "#c0392b" }}>{applyError}</p>
+      )}
 
       {isApplied && (
         <p className="gs-applied-note">
