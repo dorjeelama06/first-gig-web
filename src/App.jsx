@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CSS_STYLES } from "./styles/styles";
 import { SEEKER_STEPS, POSTER_STEPS } from "./constants/steps";
 import { supabase } from "./lib/supabase";
+import { signUp, signOut, fetchRole } from "./lib/auth";
+import { ageFromDob, validateSeekerStep, validatePosterStep } from "./lib/validation";
 
 import HomePage from "./pages/HomePage";
 import LoginForm from "./components/auth/LoginForm";
+import CheckEmail from "./components/auth/CheckEmail";
+import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
+import ResetPasswordForm from "./components/auth/ResetPasswordForm";
+import AccountIncomplete from "./components/auth/AccountIncomplete";
 import SeekerDashboard from "./pages/SeekerDashboard";
 import EmployerDashboard from "./pages/EmployerDashboard";
 
@@ -24,37 +30,82 @@ import StepBusinessInfo from "./components/poster/StepBusinessInfo";
 import PosterReview from "./components/poster/PosterReview";
 import LegalModal from "./components/shared/LegalModal";
 
+const INITIAL_SEEKER = {
+  firstName: "", lastName: "", dob: "", gender: "",
+  genderCustom: "", interests: [], customInterest: "",
+  experiences: [], availability: [], distance: "",
+  email: "", phone: "", zipCode: "", contactPreference: "",
+  parentEmail: "", password: "", confirmPassword: "",
+};
+
+const INITIAL_POSTER = {
+  companyName: "", contactName: "", contactEmail: "",
+  contactPhone: "", companyZip: "",
+  password: "", confirmPassword: "",
+};
+
 export default function App() {
-  // 'loading' | 'home' | 'login' | 'onboarding' | 'dashboard'
+  // 'loading' | 'home' | 'login' | 'forgotPassword' | 'resetPassword' | 'checkEmail'
+  // | 'onboarding' | 'incomplete' | 'dashboard'
   const [authView, setAuthView] = useState("loading");
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [roleFailed, setRoleFailed] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [loginNotice, setLoginNotice] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [stepError, setStepError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [legalSection, setLegalSection] = useState(null);
 
-  // Returns the role string so callers can use it immediately
-  const fetchRole = async (userId) => {
-    const { data } = await supabase.from("profiles").select("role").eq("id", userId).single();
-    const role = data?.role ?? null;
-    if (role) setUserRole(role);
-    return role;
+  // True while the user is setting a new password from a recovery link — nothing may navigate away
+  const recoveryRef = useRef(false);
+  // Bumped on every sign-in attempt / sign-out so a slow role lookup can't apply to a stale session
+  const enterSeq = useRef(0);
+
+  /* Look up the role for a signed-in user and route to the dashboard (or the incomplete screen). */
+  const enterApp = async (u) => {
+    const seq = ++enterSeq.current;
+    setUser(u);
+    setAuthView("loading");
+    try {
+      const role = await fetchRole(u.id);
+      if (seq !== enterSeq.current || recoveryRef.current) return;
+      setUserRole(role);
+      setRoleFailed(false);
+      setAuthView(role ? "dashboard" : "incomplete");
+    } catch (e) {
+      console.error("Role lookup failed:", e);
+      if (seq !== enterSeq.current || recoveryRef.current) return;
+      setUserRole(null);
+      setRoleFailed(true);
+      setAuthView("incomplete");
+    }
   };
 
   /* ─── Session check on mount ─── */
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        const role = await fetchRole(session.user.id);
-        // If already logged in with a known role, go straight to dashboard
-        if (role) { setAuthView("dashboard"); return; }
-      }
-      setAuthView("home");
+    if (window.location.hash.includes("type=recovery")) recoveryRef.current = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (recoveryRef.current) { setAuthView("resetPassword"); return; }
+      // If already logged in, go straight to the dashboard
+      if (session?.user) enterApp(session.user);
+      else setAuthView("home");
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    // Don't await Supabase calls in this callback — supabase-js can deadlock
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (event === "PASSWORD_RECOVERY") {
+        recoveryRef.current = true;
+        setAuthView("resetPassword");
+      } else if (event === "SIGNED_OUT") {
+        enterSeq.current++;
+        setUserRole(null);
+        setAuthView("home");
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -65,36 +116,35 @@ export default function App() {
   const [dir, setDir] = useState(1);
   const [role, setRole] = useState("");
 
-  /* ─── Seeker data ─── */
-  const [seeker, setSeeker] = useState({
-    firstName: "", lastName: "", dob: "", gender: "",
-    genderCustom: "", interests: [], customInterest: "",
-    experiences: [], availability: [], distance: "",
-    email: "", phone: "", zipCode: "", contactPreference: "",
-    parentEmail: "", password: "", confirmPassword: "",
-  });
-
-  /* ─── Poster data ─── */
-  const [poster, setPoster] = useState({
-    companyName: "", contactName: "", contactEmail: "",
-    contactPhone: "", companyZip: "",
-    password: "", confirmPassword: "",
-  });
+  /* ─── Seeker / poster data ─── */
+  const [seeker, setSeeker] = useState(INITIAL_SEEKER);
+  const [poster, setPoster] = useState(INITIAL_POSTER);
 
   const steps = role === "poster" ? POSTER_STEPS : SEEKER_STEPS;
   const currentStep = steps[step];
   const progress = ((step + 1) / steps.length) * 100;
 
+  const resetOnboarding = () => {
+    setSeeker(INITIAL_SEEKER);
+    setPoster(INITIAL_POSTER);
+    setRole("");
+    setStep(0);
+    setTermsAgreed(false);
+    setStepError("");
+    setSubmitError("");
+  };
+
   const go = (d) => {
     const next = step + d;
     if (next < 0 || next >= steps.length || animating) return;
+    setStepError("");
     setDir(d);
     setAnimating(true);
     setTimeout(() => { setStep(next); setAnimating(false); }, 250);
   };
 
   /* ─── Seeker helpers ─── */
-  const uS = (f, v) => setSeeker(p => ({ ...p, [f]: v }));
+  const uS = (f, v) => { setStepError(""); setSeeker(p => ({ ...p, [f]: v })); };
   const toggleSeekerArr = (f, item) => setSeeker(p => ({
     ...p, [f]: p[f].includes(item) ? p[f].filter(i => i !== item) : [...p[f], item],
   }));
@@ -113,122 +163,105 @@ export default function App() {
   };
 
   /* ─── Poster helpers ─── */
-  const uP = (f, v) => setPoster(p => ({ ...p, [f]: v }));
+  const uP = (f, v) => { setStepError(""); setPoster(p => ({ ...p, [f]: v })); };
 
-  const age = (() => {
-    if (!seeker.dob) return null;
-    const t = new Date(), b = new Date(seeker.dob);
-    let a = t.getFullYear() - b.getFullYear();
-    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
-    return a;
-  })();
+  const age = ageFromDob(seeker.dob);
 
-  const canProceed = () => {
-    if (currentStep === "role") return !!role;
-    return true;
+  const validateStep = (id) => role === "poster" ? validatePosterStep(id, poster) : validateSeekerStep(id, seeker);
+
+  const handleContinue = () => {
+    if (currentStep === "role" && !role) return;
+    const err = validateStep(currentStep);
+    setStepError(err);
+    if (!err) go(1);
   };
 
-  /* ─── Submit: create account + save data ─── */
+  /* ─── Sign out: clears the Supabase session, not just local state ─── */
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (e) {
+      console.error("Sign out failed:", e);
+    }
+    enterSeq.current++;
+    setUser(null);
+    setUserRole(null);
+    resetOnboarding();
+    setAuthView("home");
+  };
+
+  /* ─── Submit: create account; profile rows are created by the handle_new_user trigger ─── */
   const handleSubmit = async () => {
     setSubmitError("");
+    for (const id of steps) {
+      const err = validateStep(id);
+      if (err) { setSubmitError(err); return; }
+    }
     if (!termsAgreed) {
       setSubmitError("You must agree to the Terms of Service and Privacy Policy to continue.");
       return;
     }
     setSubmitting(true);
 
-    if (role === "seeker") {
-      if (seeker.password !== seeker.confirmPassword) {
-        setSubmitError("Passwords do not match."); setSubmitting(false); return;
+    const isPoster = role === "poster";
+    const email = (isPoster ? poster.contactEmail : seeker.email).trim();
+    const password = isPoster ? poster.password : seeker.password;
+    // Keys must match what handle_new_user reads; email comes from the auth user, never the profile
+    const profile = isPoster ? {
+      company_name: poster.companyName.trim(), contact_name: poster.contactName.trim(),
+      contact_phone: poster.contactPhone.trim(), company_zip: poster.companyZip.trim(),
+    } : {
+      first_name: seeker.firstName.trim(), last_name: seeker.lastName.trim(),
+      dob: seeker.dob, gender: seeker.gender, gender_custom: seeker.genderCustom.trim(),
+      interests: seeker.interests, experiences: seeker.experiences,
+      availability: seeker.availability, distance: seeker.distance,
+      phone: seeker.phone.trim(), zip_code: seeker.zipCode.trim(),
+      contact_preference: seeker.contactPreference, parent_email: seeker.parentEmail.trim(),
+    };
+
+    try {
+      const { needsConfirmation, user: newUser } = await signUp(email, password, role, profile);
+      resetOnboarding();
+      if (needsConfirmation) {
+        setPendingEmail(email);
+        setAuthView("checkEmail");
+      } else {
+        await enterApp(newUser);
       }
-
-      const { data, error } = await supabase.auth.signUp({
-        email: seeker.email, password: seeker.password,
-      });
-      if (error) { setSubmitError(error.message); setSubmitting(false); return; }
-
-      const userId = data.user.id;
-      await supabase.from("profiles").insert({ id: userId, role: "seeker" });
-      await supabase.from("seekers").insert({
-        id: userId,
-        first_name: seeker.firstName, last_name: seeker.lastName,
-        dob: seeker.dob || null, gender: seeker.gender, gender_custom: seeker.genderCustom,
-        interests: seeker.interests, experiences: seeker.experiences,
-        availability: seeker.availability, distance: seeker.distance,
-        email: seeker.email, phone: seeker.phone, zip_code: seeker.zipCode,
-        contact_preference: seeker.contactPreference, parent_email: seeker.parentEmail,
-      });
-
-      setUser(data.user);
-      setUserRole("seeker");
-      setAuthView("dashboard");
-
-    } else {
-      if (poster.password !== poster.confirmPassword) {
-        setSubmitError("Passwords do not match."); setSubmitting(false); return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email: poster.contactEmail, password: poster.password,
-      });
-      if (error) { setSubmitError(error.message); setSubmitting(false); return; }
-
-      const userId = data.user.id;
-      await supabase.from("profiles").insert({ id: userId, role: "poster" });
-      await supabase.from("employers").insert({
-        id: userId,
-        company_name: poster.companyName, contact_name: poster.contactName,
-        contact_email: poster.contactEmail, contact_phone: poster.contactPhone,
-        company_zip: poster.companyZip,
-      });
-
-      setUser(data.user);
-      setUserRole("poster");
-      setAuthView("dashboard");
+    } catch (e) {
+      setSubmitError(e.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   };
+
+  const goToLogin = (notice = "") => { setLoginNotice(notice); setAuthView("login"); };
 
   const tagline = role === "poster" ? "Find young talent nearby" : "Find gigs. Build skills. Earn money.";
 
-  /* ─── Loading screen ─── */
-  /* ─── Homepage — renders outside the onboarding card ─── */
-  if (authView === "dashboard") {
+  /* ─── Dashboards / homepage render outside the onboarding card ─── */
+  if (authView === "dashboard" && (userRole === "seeker" || userRole === "poster")) {
     const dashProps = {
       user,
-      onSignOut: () => { setUser(null); setUserRole(null); setAuthView("home"); },
+      onSignOut: handleSignOut,
       onBrowse: () => setAuthView("home"),
     };
-    if (userRole === "seeker") return <SeekerDashboard {...dashProps} />;
-    if (userRole === "poster") return <EmployerDashboard {...dashProps} />;
-    // Role not loaded yet — show a simple loading screen
-    return (
-      <>
-        <style>{CSS_STYLES}</style>
-        <div className="gs-wrap">
-          <div className="gs-orb gs-orb1" /><div className="gs-orb gs-orb2" />
-          <div className="gs-card" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 300 }}>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Loading your dashboard...</p>
-          </div>
-        </div>
-      </>
-    );
+    return userRole === "seeker" ? <SeekerDashboard {...dashProps} /> : <EmployerDashboard {...dashProps} />;
   }
 
   if (authView === "home") {
     return (
       <HomePage
         user={user}
-        onLogin={() => setAuthView("login")}
-        onRegister={() => setAuthView("onboarding")}
-        onSignOut={() => setUser(null)}
-        onDashboard={() => setAuthView("dashboard")}
+        onLogin={() => goToLogin()}
+        onRegister={() => { resetOnboarding(); setAuthView("onboarding"); }}
+        onSignOut={handleSignOut}
+        onDashboard={() => user && enterApp(user)}
       />
     );
   }
 
-  if (authView === "loading") {
+  if (authView === "loading" || authView === "dashboard") {
     return (
       <>
         <style>{CSS_STYLES}</style>
@@ -241,6 +274,8 @@ export default function App() {
       </>
     );
   }
+
+  const shownError = stepError || submitError;
 
   return (
     <>
@@ -273,16 +308,46 @@ export default function App() {
           {authView === "login" && (
             <div className="gs-step in">
               <LoginForm
-                onSuccess={async () => {
-                  const { data: { session } } = await supabase.auth.getSession();
-                  if (session?.user) {
-                    setUser(session.user);
-                    const role = await fetchRole(session.user.id);
-                    setUserRole(role);
-                  }
-                  setAuthView("dashboard");
-                }}
+                notice={loginNotice}
+                onSuccess={enterApp}
                 onBack={() => setAuthView("home")}
+                onForgot={() => setAuthView("forgotPassword")}
+              />
+            </div>
+          )}
+
+          {authView === "forgotPassword" && (
+            <div className="gs-step in">
+              <ForgotPasswordForm onBack={() => goToLogin()} />
+            </div>
+          )}
+
+          {authView === "resetPassword" && (
+            <div className="gs-step in">
+              <ResetPasswordForm
+                onDone={async () => {
+                  recoveryRef.current = false;
+                  window.history.replaceState(null, "", window.location.pathname);
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session?.user) enterApp(session.user);
+                  else goToLogin("Password updated — please sign in.");
+                }}
+              />
+            </div>
+          )}
+
+          {authView === "checkEmail" && (
+            <div className="gs-step in">
+              <CheckEmail email={pendingEmail} onSignIn={() => goToLogin()} />
+            </div>
+          )}
+
+          {authView === "incomplete" && (
+            <div className="gs-step in">
+              <AccountIncomplete
+                failed={roleFailed}
+                onRetry={() => user && enterApp(user)}
+                onSignOut={handleSignOut}
               />
             </div>
           )}
@@ -317,7 +382,7 @@ export default function App() {
                   <StepAvailability sel={seeker.availability} toggle={id => toggleSeekerArr("availability", id)} />
                 )}
                 {currentStep === "distance" && <StepDistance v={seeker.distance} set={v => uS("distance", v)} />}
-                {currentStep === "contact" && <StepContact d={seeker} set={uS} />}
+                {currentStep === "contact" && <StepContact d={seeker} set={uS} age={age} />}
                 {currentStep === "seekerReview" && (
                   <SeekerReview d={seeker} age={age}
                     termsAgreed={termsAgreed} setTermsAgreed={setTermsAgreed}
@@ -334,9 +399,9 @@ export default function App() {
                 )}
               </div>
 
-              {submitError && (
-                <p style={{ color: "#ff6b6b", fontSize: 13, textAlign: "center", margin: "4px 0 0", padding: "6px 12px", background: "rgba(255,107,107,0.1)", borderRadius: 8 }}>
-                  {submitError}
+              {shownError && (
+                <p role="alert" style={{ color: "#ff6b6b", fontSize: 13, textAlign: "center", margin: "4px 0 0", padding: "6px 12px", background: "rgba(255,107,107,0.1)", borderRadius: 8 }}>
+                  {shownError}
                 </p>
               )}
 
@@ -351,8 +416,8 @@ export default function App() {
                     {submitting ? "Saving..." : "Create Account ✨"}
                   </button>
                 ) : (
-                  <button className={`gs-next ${canProceed() ? "" : "disabled"}`}
-                    onClick={canProceed() ? () => go(1) : undefined}>Continue →</button>
+                  <button className={`gs-next ${currentStep === "role" && !role ? "disabled" : ""}`}
+                    onClick={handleContinue}>Continue →</button>
                 )}
               </div>
             </>

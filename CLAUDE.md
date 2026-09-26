@@ -10,8 +10,9 @@ First Gig is a mobile-first job marketplace connecting teen/young job seekers wi
 - **Node**: 20 (pinned in CI)
 
 ## Architecture
-- **No router** — view switching is a single `authView` state enum in `App.jsx`: `loading | home | login | onboarding | dashboard`
-- **Role routing**: `profiles` table stores `seeker | poster` per auth user; fetched immediately after login via `fetchRole()` which **must be awaited** before `setAuthView("dashboard")` or the dashboard renders blank
+- **No router** — view switching is a single `authView` state enum in `App.jsx`: `loading | home | login | forgotPassword | resetPassword | checkEmail | onboarding | incomplete | dashboard`
+- **Role routing**: `profiles` table stores `seeker | poster` per auth user. Every sign-in path goes through `enterApp(user)` in `App.jsx`, which awaits `fetchRole()` (`src/lib/auth.js`) and routes to `dashboard`, or to `incomplete` when there's no role / the lookup failed
+- **Signup**: `signUp()` in `src/lib/auth.js` passes `{ role, profile }` as metadata; the `handle_new_user` trigger (first-gig-mobile migrations) creates `profiles` + `seekers`/`employers`. Clients can't insert those rows. Profile keys must match what the trigger reads. Step validation lives in `src/lib/validation.js` (min seeker age 14, mirrored in the trigger)
 - **Profile data split**: `profiles` (role only) → `seekers` or `employers` (all other data)
 - **Onboarding state**: entire multi-step form lives in `App.jsx` as `seeker` / `poster` objects; step IDs are string arrays in `src/constants/steps.js`
 - **Data access**: all reads/writes go through thin wrappers in `src/lib/` (`applications.js`, `chat.js`); RLS on every table — no server API layer

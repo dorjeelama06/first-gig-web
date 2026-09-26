@@ -57,7 +57,7 @@ export default function JobDetail({ job, user, onApply, appliedJobIds = [], onCl
     </div>
   );
 
-  const companyName = job.employers?.company_name ?? "Employer";
+  const companyName = job.employers?.company_name?.trim() || "Employer";
   const avatarLetter = companyName[0].toUpperCase();
 
   const catLabels = (job.job_category || []).map(id => {

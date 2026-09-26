@@ -1,4 +1,5 @@
-export default function StepContact({ d, set }) {
+export default function StepContact({ d, set, age }) {
+  const parentRequired = age === null || age < 18;
   return (
     <div>
       <h2 className="gs-title">How can we reach you?</h2>
@@ -30,14 +31,14 @@ export default function StepContact({ d, set }) {
           onChange={e => set("zipCode", e.target.value)} placeholder="10001" maxLength={10} />
       </div>
       <div className="gs-field">
-        <label className="gs-label">Parent / Guardian Email *</label>
+        <label className="gs-label">Parent / Guardian Email {parentRequired ? "*" : "(optional)"}</label>
         <input type="email" className="gs-input" value={d.parentEmail}
           onChange={e => set("parentEmail", e.target.value)} placeholder="parent@email.com" />
       </div>
       <div className="gs-field">
         <label className="gs-label">Create Password *</label>
         <input type="password" className="gs-input" value={d.password}
-          onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" />
+          onChange={e => set("password", e.target.value)} placeholder="Min. 8 characters" />
       </div>
       <div className="gs-field">
         <label className="gs-label">Confirm Password *</label>
