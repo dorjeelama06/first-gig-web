@@ -32,7 +32,8 @@ export default function ChatWindow({ conversation, userId, role, onBack, onBlock
     fetchMessages(conversation.id).then(msgs => {
       setMessages(msgs);
       setLoading(false);
-      markMessagesAsRead(conversation.id, userId);
+      markMessagesAsRead(conversation.id, userId)
+        .catch(e => console.error("Mark as read failed:", e));
     });
 
     const unsubscribe = subscribeToMessages(conversation.id, newMsg => {
@@ -40,6 +41,11 @@ export default function ChatWindow({ conversation, userId, role, onBack, onBlock
         if (prev.find(m => m.id === newMsg.id)) return prev;
         return [...prev, newMsg];
       });
+      // The chat is open, so a message from the other person is read on arrival
+      if (newMsg.sender_id !== userId) {
+        markMessagesAsRead(conversation.id, userId)
+          .catch(e => console.error("Mark as read failed:", e));
+      }
     });
 
     return unsubscribe;
