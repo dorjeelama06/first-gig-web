@@ -27,7 +27,7 @@ npm install          # install deps
 npm run dev          # dev server → http://localhost:5173
 npm run build        # production build → dist/
 npm run lint         # eslint src
-npm test             # vitest run (no test files yet — exits 1)
+npm test             # vitest run (tests in src/lib/__tests__/)
 ```
 No typecheck command (plain JS). Deploy = merge to `main`; CI builds with the `VITE_SUPABASE_*` repo secrets and publishes `dist/` to the `gh-pages` branch. There is no manual deploy script.
 

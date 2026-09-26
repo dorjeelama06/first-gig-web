@@ -12,6 +12,18 @@ export function ageFromDob(dob, today = new Date()) {
   return age;
 }
 
+/* A job's min_age (stored as text) as a number; blank/missing falls back to the platform minimum. */
+export function parseMinAge(minAge) {
+  const n = parseInt(String(minAge ?? "").replace(/\D/g, ""), 10);
+  return Number.isNaN(n) ? MIN_SEEKER_AGE : n;
+}
+
+/* Whether a seeker with this dob can apply to a job with this min_age. Mirrors the applications RLS policy. */
+export function meetsMinAge(dob, minAge, today = new Date()) {
+  const age = ageFromDob(dob, today);
+  return age !== null && age >= parseMinAge(minAge);
+}
+
 /* Local-time YYYY-MM-DD, for date input `max` attributes. */
 export function todayIso(today = new Date()) {
   const pad = (n) => String(n).padStart(2, "0");
