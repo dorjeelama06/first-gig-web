@@ -7,7 +7,7 @@ export default function StepDOB({ v, set, age }) {
       <h2 className="gs-title">When were you born?</h2>
       <p className="gs-desc">Helps us match you with age-appropriate gigs.</p>
       <div className="gs-field">
-        <label className="gs-label" htmlFor="seeker-dob">Date of Birth</label>
+        <label className="gs-label" htmlFor="seeker-dob">Date of Birth *</label>
         <input id="seeker-dob" type="date" className="gs-input" value={v} max={todayIso()}
           onChange={e => set(e.target.value)} />
       </div>
