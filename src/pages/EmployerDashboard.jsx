@@ -167,8 +167,9 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
     setApplicants(prev => prev.map(a => a.id === applicationId ? { ...a, status } : a));
   };
 
-  const companyName = profile?.company_name ?? "Your Company";
+  const companyName = profile?.company_name?.trim() || "Your Company";
   const companyInitial = companyName[0].toUpperCase();
+  const seekerName = (s) => [s?.first_name, s?.last_name].filter(Boolean).join(" ") || "Applicant";
   const newApplicants = applicants.filter(a => a.status === "pending").length;
 
   const navItems = [
@@ -273,7 +274,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                       <p style={{ color: "#bbb", fontSize: 13 }}>No applicants yet</p>
                     </div>
                   ) : applicants.slice(0, 3).map(a => {
-                    const name = a.seekers ? `${a.seekers.first_name} ${a.seekers.last_name}` : "Applicant";
+                    const name = seekerName(a.seekers);
                     const statusInfo = STATUS_LABELS[a.status] || STATUS_LABELS.pending;
                     return (
                       <div key={a.id} className="dash-list-item" style={{ cursor: "pointer" }}
@@ -415,7 +416,7 @@ export default function EmployerDashboard({ user, onSignOut, onBrowse }) {
                     )}
                     {applicants.map(a => {
                       const s = a.seekers;
-                      const name = s ? `${s.first_name} ${s.last_name}` : "Applicant";
+                      const name = seekerName(s);
                       const statusInfo = STATUS_LABELS[a.status] || STATUS_LABELS.pending;
                       const appliedDate = new Date(a.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
                       return (

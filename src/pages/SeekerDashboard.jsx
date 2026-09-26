@@ -6,6 +6,7 @@ import { fetchSeekerApplications, subscribeToApplicationUpdates } from "../lib/a
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { fetchBlockedUsers, unblockUser } from "../lib/blocks";
 import { supabase } from "../lib/supabase";
+import { ageFromDob } from "../lib/validation";
 import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
@@ -149,8 +150,9 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
   }, [user.id]);
 
   const firstName = profile?.first_name ?? "there";
-  const fullName  = profile ? `${profile.first_name} ${profile.last_name}` : "—";
-  const initials  = profile ? `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase() : "?";
+  const nameParts = [profile?.first_name, profile?.last_name].filter(Boolean);
+  const fullName  = nameParts.length ? nameParts.join(" ") : "—";
+  const initials  = nameParts.length ? nameParts.map(n => n[0]).join("").toUpperCase() : "?";
   const interviewCount = applications.filter(a => a.status === "accepted").length;
 
   const navItems = [
@@ -365,13 +367,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                 {/* ── View mode ── */}
                 {!editing && (() => {
                   // Compute age from DOB
-                  const age = (() => {
-                    if (!profile?.dob) return null;
-                    const t = new Date(), b = new Date(profile.dob);
-                    let a = t.getFullYear() - b.getFullYear();
-                    if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
-                    return a;
-                  })();
+                  const age = ageFromDob(profile?.dob);
 
                   const genderDisplay = profile?.gender === "custom" ? profile?.gender_custom : profile?.gender;
                   const distanceLabel = DISTANCE_OPTIONS.find(o => o.id === profile?.distance);

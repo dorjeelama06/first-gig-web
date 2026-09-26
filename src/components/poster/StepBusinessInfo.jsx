@@ -31,7 +31,7 @@ export default function StepBusinessInfo({ d, set }) {
       <div className="gs-field">
         <label className="gs-label">Create Password *</label>
         <input type="password" className="gs-input" value={d.password}
-          onChange={e => set("password", e.target.value)} placeholder="Min. 6 characters" />
+          onChange={e => set("password", e.target.value)} placeholder="Min. 8 characters" />
       </div>
       <div className="gs-field">
         <label className="gs-label">Confirm Password *</label>

@@ -114,11 +114,6 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     return { success: true, alreadyApplied: result.alreadyApplied };
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    onSignOut();
-  };
-
   const activeCategoryLabel = activeCategory !== ALL
     ? CATEGORY_OPTIONS.find(o => o.id === activeCategory)?.label ?? ""
     : null;
@@ -139,7 +134,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
         user={user}
         onLogin={onLogin}
         onRegister={onRegister}
-        onSignOut={handleSignOut}
+        onSignOut={onSignOut}
         onDashboard={onDashboard}
         onHome={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       />
