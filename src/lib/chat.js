@@ -82,13 +82,15 @@ export function subscribeToMessages(conversationId, onNew) {
   return () => supabase.removeChannel(channel);
 }
 
-/* Subscribe to any new messages (to refresh conversation list or unread badge).
+/* Subscribe to new messages, read-status changes and new conversations
+   (to refresh conversation list or unread badge).
    Pass a unique `tag` string to avoid channel name conflicts when multiple
    components subscribe for the same user at the same time. */
 export function subscribeToConversationUpdates(userId, onUpdate, tag = "default") {
   const channel = supabase
     .channel(`convo-updates-${userId}-${tag}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, onUpdate)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, onUpdate)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversations" }, onUpdate)
     .subscribe();
 
@@ -122,12 +124,14 @@ export function getLastMessage(messages) {
 /* Mark all messages from the other party as read when a conversation is opened */
 export async function markMessagesAsRead(conversationId, userId) {
   // Only update messages where: correct conversation, not sent by the current user, and not yet read
-  await supabase
+  const { error } = await supabase
     .from("messages")
     .update({ read: true })
     .eq("conversation_id", conversationId)
     .neq("sender_id", userId)
     .eq("read", false);
+
+  if (error) throw error;
 }
 
 /* Count how many conversations have at least one unread message not sent by this user.
