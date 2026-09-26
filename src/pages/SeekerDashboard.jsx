@@ -14,6 +14,10 @@ import "../styles/homepage.css";
 const INPUT  = { width: "100%", padding: "10px 12px", border: "1.5px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", color: "#1a1a2e" };
 const LABEL  = { display: "block", fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 };
 const FIELD  = { marginBottom: 14 };
+
+const digitsOnly = (v) => String(v ?? "").replace(/\D/g, "");
+// Stored phones may be formatted ("(555) 123-4567") or carry a +1 country code
+const phoneDigits = (v) => { const d = digitsOnly(v); return (d.length === 11 && d[0] === "1" ? d.slice(1) : d).slice(0, 10); };
 const CHIP   = (active) => ({ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 50, border: `1.5px solid ${active ? "#FF6B35" : "#e5e7eb"}`, background: active ? "rgba(255,107,53,0.07)" : "#fff", color: active ? "#FF6B35" : "#555", fontWeight: active ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginRight: 6, marginBottom: 6 });
 
 const STATUS_STYLE = {
@@ -45,8 +49,8 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
     setEditForm({
       firstName:    profile?.first_name    ?? "",
       lastName:     profile?.last_name     ?? "",
-      phone:        profile?.phone         ?? "",
-      zipCode:      profile?.zip_code      ?? "",
+      phone:        phoneDigits(profile?.phone),
+      zipCode:      digitsOnly(profile?.zip_code).slice(0, 5),
       parentEmail:  profile?.parent_email  ?? "",
       availability: profile?.availability  ?? [],
       interests:    profile?.interests     ?? [],
@@ -72,6 +76,8 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
   const handleSaveProfile = async () => {
     if (!editForm.firstName.trim()) { setSaveError("First name is required."); return; }
+    if (editForm.phone && editForm.phone.length !== 10) { setSaveError("Please enter a 10-digit phone number, or leave it blank."); return; }
+    if (editForm.zipCode.length !== 5) { setSaveError("Please enter a 5-digit zip code."); return; }
     if (!isValidEmail(editForm.parentEmail)) { setSaveError("A parent or guardian email is required."); return; }
     setSaveError("");
     setSaving(true);
@@ -507,11 +513,11 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                     <div style={{ display: "flex", gap: 10, marginBottom: 0 }}>
                       <div style={{ ...FIELD, flex: 1 }}>
                         <label style={LABEL}>First Name *</label>
-                        <input style={INPUT} value={editForm.firstName} onChange={e => ef("firstName", e.target.value)} placeholder="First name" />
+                        <input style={INPUT} value={editForm.firstName} onChange={e => ef("firstName", e.target.value)} placeholder="First name" maxLength={50} />
                       </div>
                       <div style={{ ...FIELD, flex: 1 }}>
                         <label style={LABEL}>Last Name</label>
-                        <input style={INPUT} value={editForm.lastName} onChange={e => ef("lastName", e.target.value)} placeholder="Last name" />
+                        <input style={INPUT} value={editForm.lastName} onChange={e => ef("lastName", e.target.value)} placeholder="Last name" maxLength={50} />
                       </div>
                     </div>
 
@@ -519,18 +525,20 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                     <div style={{ display: "flex", gap: 10 }}>
                       <div style={{ ...FIELD, flex: 1 }}>
                         <label style={LABEL}>Phone</label>
-                        <input style={INPUT} value={editForm.phone} onChange={e => ef("phone", e.target.value)} placeholder="(555) 000-0000" />
+                        <input style={INPUT} type="tel" inputMode="numeric" value={editForm.phone}
+                          onChange={e => ef("phone", digitsOnly(e.target.value).slice(0, 10))} placeholder="5550000000" />
                       </div>
                       <div style={{ ...FIELD, flex: 1 }}>
-                        <label style={LABEL}>Zip Code</label>
-                        <input style={INPUT} value={editForm.zipCode} onChange={e => ef("zipCode", e.target.value)} placeholder="10001" maxLength={10} />
+                        <label style={LABEL}>Zip Code *</label>
+                        <input style={INPUT} inputMode="numeric" value={editForm.zipCode}
+                          onChange={e => ef("zipCode", digitsOnly(e.target.value).slice(0, 5))} placeholder="10001" />
                       </div>
                     </div>
 
                     {/* Parent email */}
                     <div style={FIELD}>
                       <label style={LABEL}>Parent / Guardian Email *</label>
-                      <input style={INPUT} value={editForm.parentEmail} onChange={e => ef("parentEmail", e.target.value)} placeholder="parent@email.com" type="email" />
+                      <input style={INPUT} value={editForm.parentEmail} onChange={e => ef("parentEmail", e.target.value)} placeholder="parent@email.com" type="email" maxLength={254} />
                     </div>
 
                     {/* Availability */}
