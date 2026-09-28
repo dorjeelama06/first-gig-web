@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CATEGORY_OPTIONS, AVAILABILITY_OPTIONS } from "../../constants/options";
-import { meetsMinAge, parseMinAge } from "../../lib/validation";
+import { meetsMinAge, parseMinAge, needsParentApproval } from "../../lib/validation";
 import { reportJob } from "../../lib/reports";
 import ReportModal from "./ReportModal";
 
@@ -31,17 +31,18 @@ function GlanceRow({ icon, label, value, sub }) {
 }
 
 /* Why a signed-in user can't apply, or null if they can.
-   seekerDob: undefined = loading, null = not a seeker, false = lookup failed (server still enforces). */
-function applyBlockReason(job, seekerDob) {
-  if (seekerDob === undefined) return "Checking eligibility...";
-  if (seekerDob === null) return "Only job seekers can apply";
-  if (seekerDob !== false && !meetsMinAge(seekerDob, job.min_age)) {
-    return `You must be ${parseMinAge(job.min_age)}+ to apply`;
-  }
+   seeker: undefined = loading, null = not a seeker, false = lookup failed (server still enforces),
+   otherwise { dob, parent_verified_at }. */
+function applyBlockReason(job, seeker) {
+  if (seeker === undefined) return "Checking eligibility...";
+  if (seeker === null) return "Only job seekers can apply";
+  if (seeker === false) return null;
+  if (needsParentApproval(seeker.dob, seeker.parent_verified_at)) return "Waiting for parent approval";
+  if (!meetsMinAge(seeker.dob, job.min_age)) return `You must be ${parseMinAge(job.min_age)}+ to apply`;
   return null;
 }
 
-export default function JobDetail({ job, user, seekerDob, onApply, appliedJobIds = [], onClose }) {
+export default function JobDetail({ job, user, seeker, onApply, appliedJobIds = [], onClose }) {
   const [applying, setApplying]     = useState(false);
   const [justApplied, setJustApplied] = useState(false);
   const [applyErrorFor, setApplyErrorFor] = useState({ jobId: null, message: "" });
@@ -51,7 +52,7 @@ export default function JobDetail({ job, user, seekerDob, onApply, appliedJobIds
   const applyError = applyErrorFor.jobId === job?.id ? applyErrorFor.message : "";
 
   const isApplied = justApplied || appliedJobIds.includes(job?.id);
-  const blockReason = user && job && !isApplied ? applyBlockReason(job, seekerDob) : null;
+  const blockReason = user && job && !isApplied ? applyBlockReason(job, seeker) : null;
 
   const handleApply = async () => {
     if (!user) { onApply(job); return; }
@@ -64,7 +65,7 @@ export default function JobDetail({ job, user, seekerDob, onApply, appliedJobIds
     } catch (e) {
       setApplyErrorFor({
         jobId: job.id,
-        message: e?.message === "You're not eligible to apply to this job."
+        message: e?.message?.startsWith("You're not eligible")
           ? e.message
           : "Couldn't send your application. Please try again.",
       });

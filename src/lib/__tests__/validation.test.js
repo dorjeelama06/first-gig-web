@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   ageFromDob, todayIso, isValidEmail, isValidZip, validateSeekerStep, validatePosterStep,
-  parseMinAge, meetsMinAge,
+  parseMinAge, meetsMinAge, needsParentApproval,
 } from "../validation";
 
 // Local-time date, matching how the app reads "today"
@@ -146,5 +146,21 @@ describe("meetsMinAge", () => {
   });
   it("blocks when the dob is unknown", () => {
     expect(meetsMinAge(null, "14", TODAY)).toBe(false);
+  });
+});
+
+describe("needsParentApproval", () => {
+  it("blocks an unapproved minor", () => {
+    expect(needsParentApproval("2010-01-15", null, TODAY)).toBe(true);
+  });
+  it("allows an approved minor", () => {
+    expect(needsParentApproval("2010-01-15", "2026-09-20T00:00:00Z", TODAY)).toBe(false);
+  });
+  it("lifts on the 18th birthday", () => {
+    expect(needsParentApproval("2008-09-26", null, TODAY)).toBe(false);
+    expect(needsParentApproval("2008-09-27", null, TODAY)).toBe(true);
+  });
+  it("doesn't block when dob is unknown (not a seeker)", () => {
+    expect(needsParentApproval(null, null, TODAY)).toBe(false);
   });
 });

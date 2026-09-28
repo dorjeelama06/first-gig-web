@@ -5,7 +5,8 @@ import { blockUser } from "../../lib/blocks";
 import ReportUserModal from "../shared/ReportUserModal";
 import BlockUserModal from "../shared/BlockUserModal";
 
-export default function ChatWindow({ conversation, userId, role, onBack, onBlocked }) {
+/* sendBlockedReason: when set, the message box is disabled and shows this instead */
+export default function ChatWindow({ conversation, userId, role, onBack, onBlocked, sendBlockedReason }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -57,7 +58,7 @@ export default function ChatWindow({ conversation, userId, role, onBack, onBlock
 
   const handleSend = async () => {
     const content = input.trim();
-    if (!content || !conversation || sending) return;
+    if (!content || !conversation || sending || sendBlockedReason) return;
     setInput("");
     setSending(true);
     try {
@@ -166,12 +167,13 @@ export default function ChatWindow({ conversation, userId, role, onBack, onBlock
         <textarea
           className="dash-chat-input"
           rows={1}
-          placeholder="Type a message..."
+          placeholder={sendBlockedReason || "Type a message..."}
           value={input}
+          disabled={!!sendBlockedReason}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
         />
-        <button className="dash-send-btn" onClick={handleSend} disabled={sending}>➤</button>
+        <button className="dash-send-btn" onClick={handleSend} disabled={sending || !!sendBlockedReason}>➤</button>
       </div>
 
       {reportOpen && (

@@ -26,7 +26,9 @@ export async function applyToJob(jobId, seekerId, employerId) {
       // Postgres unique constraint violation — treat as a duplicate application
       if (error.code === "23505") return { alreadyApplied: true };
       // RLS rejection — e.g. seeker is under the job's min_age
-      if (error.code === "42501") throw new Error("You're not eligible to apply to this job.");
+      if (error.code === "42501") {
+        throw new Error("You're not eligible to apply to this job. If you're under 18, your parent needs to approve your account first.");
+      }
       throw error;
     }
 
@@ -37,17 +39,17 @@ export async function applyToJob(jobId, seekerId, employerId) {
   }
 }
 
-/* Fetch the signed-in seeker's date of birth (for min_age eligibility).
-   Returns null when the user has no seekers row (e.g. an employer). */
-export async function fetchSeekerDob(seekerId) {
+/* Fetch what the signed-in seeker's apply eligibility depends on (min_age, parent approval).
+   Returns { dob, parent_verified_at }, or null when the user has no seekers row (e.g. an employer). */
+export async function fetchSeekerEligibility(seekerId) {
   const { data, error } = await supabase
     .from("seekers")
-    .select("dob")
+    .select("dob, parent_verified_at")
     .eq("id", seekerId)
     .maybeSingle();
 
   if (error) throw error;
-  return data?.dob ?? null;
+  return data ?? null;
 }
 
 /* Fetch all job IDs a seeker has applied to (for button state on homepage) */
