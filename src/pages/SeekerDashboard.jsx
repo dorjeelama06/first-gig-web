@@ -6,7 +6,8 @@ import { fetchSeekerApplications, subscribeToApplicationUpdates } from "../lib/a
 import { fetchUnreadCount, subscribeToConversationUpdates } from "../lib/chat";
 import { fetchBlockedUsers, unblockUser } from "../lib/blocks";
 import { supabase } from "../lib/supabase";
-import { ageFromDob, isValidEmail } from "../lib/validation";
+import { ageFromDob, isValidEmail, needsParentApproval } from "../lib/validation";
+import { sendParentVerification } from "../lib/parentVerification";
 import { AVAILABILITY_OPTIONS, CATEGORY_OPTIONS, DISTANCE_OPTIONS } from "../constants/options";
 import "../styles/dashboard.css";
 import "../styles/homepage.css";
@@ -93,9 +94,11 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
         distance:     editForm.distance,
       }).eq("id", user.id);
       if (error) throw error;
-      // Update local state immediately — no re-fetch needed
+      // Update local state immediately — no re-fetch needed.
+      // A new parent email revokes approval (seekers_parent_email_changed trigger).
       setProfile(p => ({
         ...p,
+        ...(p?.parent_email !== editForm.parentEmail.trim() && { parent_verified_at: null }),
         first_name:   editForm.firstName.trim(),
         last_name:    editForm.lastName.trim(),
         phone:        editForm.phone.trim(),
@@ -118,6 +121,29 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
     supabase.from("seekers").select("*").eq("id", user.id).single()
       .then(({ data }) => { if (data) setProfile(data); });
   }, [user.id]);
+
+  // Parent approval for under-18s: email the parent automatically if no link is pending
+  const awaitingParent = !!profile && needsParentApproval(profile.dob, profile.parent_verified_at);
+  const [parentNotice, setParentNotice] = useState({ sending: false, message: "", error: false });
+  useEffect(() => {
+    if (!awaitingParent) return;
+    sendParentVerification({ auto: true })
+      .then(r => {
+        // Approved in another tab/device since the profile loaded
+        if (r?.status === "verified") setProfile(p => ({ ...p, parent_verified_at: new Date().toISOString() }));
+      })
+      .catch(e => setParentNotice({ sending: false, message: e.message, error: true }));
+  }, [awaitingParent, profile?.parent_email]);
+
+  const handleResendParent = async () => {
+    setParentNotice({ sending: true, message: "", error: false });
+    try {
+      await sendParentVerification();
+      setParentNotice({ sending: false, message: "Sent — ask them to check their inbox and spam folder.", error: false });
+    } catch (e) {
+      setParentNotice({ sending: false, message: e.message, error: true });
+    }
+  };
 
   // Fetch applications
   useEffect(() => {
@@ -203,6 +229,29 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
 
         {/* Main */}
         <main className="dash-main">
+
+          {/* ── Parent approval banner ── */}
+          {awaitingParent && (
+            <div role="status" style={{ margin: "16px 16px 0", padding: "14px 16px", background: "#fff8e6", border: "1.5px solid #f5d38a", borderRadius: 12, fontSize: 13, color: "#5c4400", lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontWeight: 700 }}>⏳ Waiting for your parent or guardian to approve</p>
+              <p style={{ margin: "4px 0 0" }}>
+                We emailed <strong>{profile.parent_email}</strong>. Until they approve, you can browse jobs but can't apply or message employers.
+              </p>
+              {parentNotice.message && (
+                <p style={{ margin: "6px 0 0", color: parentNotice.error ? "#c0392b" : "#2e7d32", fontWeight: 600 }}>{parentNotice.message}</p>
+              )}
+              <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                <button onClick={handleResendParent} disabled={parentNotice.sending}
+                  style={{ padding: "7px 14px", background: "#FF6B35", color: "#fff", border: "none", borderRadius: 8, fontWeight: 700, fontSize: 12, cursor: parentNotice.sending ? "not-allowed" : "pointer", opacity: parentNotice.sending ? 0.6 : 1, fontFamily: "inherit" }}>
+                  {parentNotice.sending ? "Sending..." : "Resend email"}
+                </button>
+                <button onClick={() => { setTab("profile"); startEditing(); }}
+                  style={{ padding: "7px 14px", background: "transparent", color: "#5c4400", border: "1.5px solid #f5d38a", borderRadius: 8, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                  Change parent email
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* ── Overview ── */}
           {tab === "overview" && (
@@ -348,6 +397,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                   conversation={activeConvo}
                   userId={user.id}
                   role="seeker"
+                  sendBlockedReason={awaitingParent ? "You can message once your parent approves your account." : ""}
                   onBack={() => setActiveConvo(null)}
                   onBlocked={() => { setActiveConvo(null); setConvoRefreshKey(k => k + 1); }}
                 />
@@ -412,7 +462,7 @@ export default function SeekerDashboard({ user, onSignOut, onBrowse }) {
                         <Row label="Phone"              value={profile?.phone} />
                         <Row label="Zip Code"           value={profile?.zip_code} />
                         <Row label="Contact Preference" value={profile?.contact_preference} />
-                        <Row label="Parent / Guardian"  value={profile?.parent_email} />
+                        <Row label="Parent / Guardian"  value={profile?.parent_email && (profile.parent_verified_at ? `${profile.parent_email} ✓ Approved` : profile.parent_email)} />
                       </div>
 
                       {/* Availability & Distance */}

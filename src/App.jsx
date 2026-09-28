@@ -8,6 +8,7 @@ import { ageFromDob, validateSeekerStep, validatePosterStep } from "./lib/valida
 import HomePage from "./pages/HomePage";
 import LoginForm from "./components/auth/LoginForm";
 import CheckEmail from "./components/auth/CheckEmail";
+import ParentConfirm from "./components/auth/ParentConfirm";
 import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
 import ResetPasswordForm from "./components/auth/ResetPasswordForm";
 import AccountIncomplete from "./components/auth/AccountIncomplete";
@@ -44,8 +45,11 @@ const INITIAL_POSTER = {
   password: "", confirmPassword: "",
 };
 
+// Approval link from the parent verification email (?parent_token=…), read once on load
+const PARENT_TOKEN = new URLSearchParams(window.location.search).get("parent_token");
+
 export default function App() {
-  // 'loading' | 'home' | 'login' | 'forgotPassword' | 'resetPassword' | 'checkEmail'
+  // 'loading' | 'home' | 'login' | 'forgotPassword' | 'resetPassword' | 'checkEmail' | 'parentConfirm'
   // | 'onboarding' | 'incomplete' | 'dashboard'
   const [authView, setAuthView] = useState("loading");
   const [user, setUser] = useState(null);
@@ -90,6 +94,8 @@ export default function App() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (recoveryRef.current) { setAuthView("resetPassword"); return; }
+      // The parent opening the link may be signed in (e.g. shared device); show the approval page either way
+      if (PARENT_TOKEN) { setAuthView("parentConfirm"); return; }
       // If already logged in, go straight to the dashboard
       if (session?.user) enterApp(session.user);
       else setAuthView("home");
@@ -331,6 +337,20 @@ export default function App() {
                   const { data: { session } } = await supabase.auth.getSession();
                   if (session?.user) enterApp(session.user);
                   else goToLogin("Password updated — please sign in.");
+                }}
+              />
+            </div>
+          )}
+
+          {authView === "parentConfirm" && (
+            <div className="gs-step in">
+              <ParentConfirm
+                token={PARENT_TOKEN}
+                onDone={async () => {
+                  window.history.replaceState(null, "", window.location.pathname);
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session?.user) enterApp(session.user);
+                  else setAuthView("home");
                 }}
               />
             </div>

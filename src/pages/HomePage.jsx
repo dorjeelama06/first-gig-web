@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
-import { applyToJob, fetchAppliedJobIds, fetchSeekerDob } from "../lib/applications";
+import { applyToJob, fetchAppliedJobIds, fetchSeekerEligibility } from "../lib/applications";
 import { fetchBlockedIds } from "../lib/blocks";
 import Navbar from "../components/shared/Navbar";
 import JobCard from "../components/jobs/JobCard";
@@ -18,7 +18,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(ALL);
   const [appliedJobIds, setAppliedJobIds] = useState([]);
-  const [seekerDobFor, setSeekerDobFor] = useState({ userId: null, dob: undefined });
+  const [seekerFor, setSeekerFor] = useState({ userId: null, seeker: undefined });
   const [filterOpen, setFilterOpen] = useState(false);
   const [jobDetailOpen, setJobDetailOpen] = useState(false);
   const [legalSection, setLegalSection] = useState(null); // "terms" | "privacy" | null
@@ -62,15 +62,15 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
     }
   }, [user]);
 
-  // Seeker's dob for min_age eligibility: undefined = loading, null = not a seeker,
-  // false = lookup failed (skip the client check; the applications RLS policy still enforces it)
+  // Seeker's { dob, parent_verified_at } for apply eligibility: undefined = loading, null = not a seeker,
+  // false = lookup failed (skip the client check; the applications RLS policies still enforce it)
   useEffect(() => {
     if (!user) return;
-    fetchSeekerDob(user.id)
-      .then(dob => setSeekerDobFor({ userId: user.id, dob }))
-      .catch(() => setSeekerDobFor({ userId: user.id, dob: false }));
+    fetchSeekerEligibility(user.id)
+      .then(seeker => setSeekerFor({ userId: user.id, seeker }))
+      .catch(() => setSeekerFor({ userId: user.id, seeker: false }));
   }, [user]);
-  const seekerDob = user && seekerDobFor.userId === user.id ? seekerDobFor.dob : undefined;
+  const seeker = user && seekerFor.userId === user.id ? seekerFor.seeker : undefined;
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -409,7 +409,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
 
         {/* Desktop: right panel (always visible, shows placeholder when no job selected) */}
         <div className="gs-jobs-right gs-jobs-right--desktop">
-          <JobDetail job={selectedJob} user={user} seekerDob={seekerDob} onApply={handleApply} appliedJobIds={appliedJobIds} />
+          <JobDetail job={selectedJob} user={user} seeker={seeker} onApply={handleApply} appliedJobIds={appliedJobIds} />
         </div>
       </div>
 
@@ -419,7 +419,7 @@ export default function HomePage({ user, onLogin, onRegister, onSignOut, onDashb
           <JobDetail
             job={selectedJob}
             user={user}
-            seekerDob={seekerDob}
+            seeker={seeker}
             onApply={handleApply}
             appliedJobIds={appliedJobIds}
             onClose={() => setJobDetailOpen(false)}

@@ -24,6 +24,12 @@ export function meetsMinAge(dob, minAge, today = new Date()) {
   return age !== null && age >= parseMinAge(minAge);
 }
 
+/* Under-18 seekers can't apply or message until a parent approves. Mirrors seeker_is_blocked() in SQL. */
+export function needsParentApproval(dob, parentVerifiedAt, today = new Date()) {
+  const age = ageFromDob(dob, today);
+  return age !== null && age < 18 && !parentVerifiedAt;
+}
+
 /* Local-time YYYY-MM-DD, for date input `max` attributes. */
 export function todayIso(today = new Date()) {
   const pad = (n) => String(n).padStart(2, "0");
