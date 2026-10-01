@@ -10,6 +10,7 @@ const TODAY = new Date(2026, 8, 26); // 2026-09-26
 const seeker = (over = {}) => ({
   firstName: "Jo", lastName: "", dob: "2010-01-15", email: "jo@example.com",
   phone: "", zipCode: "07030", parentEmail: "mom@example.com",
+  interests: ["errands"], availability: ["weekday_afternoon"], distance: "5", gender: "", experiences: [],
   password: "longenough", confirmPassword: "longenough", ...over,
 });
 
@@ -162,5 +163,24 @@ describe("needsParentApproval", () => {
   });
   it("doesn't block when dob is unknown (not a seeker)", () => {
     expect(needsParentApproval(null, null, TODAY)).toBe(false);
+  });
+});
+
+describe("required onboarding choices", () => {
+  it("requires at least one interest", () => {
+    expect(validateSeekerStep("interests", seeker({ interests: [] }), TODAY)).toMatch(/at least one type/);
+    expect(validateSeekerStep("interests", seeker(), TODAY)).toBe("");
+  });
+  it("requires at least one availability slot", () => {
+    expect(validateSeekerStep("availability", seeker({ availability: [] }), TODAY)).toMatch(/at least one time/);
+    expect(validateSeekerStep("availability", seeker(), TODAY)).toBe("");
+  });
+  it("requires a travel distance", () => {
+    expect(validateSeekerStep("distance", seeker({ distance: "" }), TODAY)).toMatch(/how far/);
+    expect(validateSeekerStep("distance", seeker(), TODAY)).toBe("");
+  });
+  it("keeps gender and experience optional", () => {
+    expect(validateSeekerStep("gender", seeker(), TODAY)).toBe("");
+    expect(validateSeekerStep("experience", seeker(), TODAY)).toBe("");
   });
 });
