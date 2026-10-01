@@ -58,6 +58,13 @@ export function validateSeekerStep(stepId, s, today = new Date()) {
       if (age < MIN_SEEKER_AGE) return `You need to be at least ${MIN_SEEKER_AGE} to use First Gig.`;
       return "";
     }
+    // gender and experience are optional by design ("Optional and kept private", "No worries if not")
+    case "interests":
+      return s.interests.length ? "" : "Pick at least one type of gig you're interested in.";
+    case "availability":
+      return s.availability.length ? "" : "Pick at least one time you could work.";
+    case "distance":
+      return s.distance ? "" : "Choose how far you'd travel for a gig.";
     case "contact": {
       if (!isValidEmail(s.email)) return "Please enter a valid email address.";
       if (s.phone.trim() && s.phone.replace(/\D/g, "").length < 10) return "Please enter a 10-digit phone number, or leave it blank.";
